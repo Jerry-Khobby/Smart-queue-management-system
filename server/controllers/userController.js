@@ -7,22 +7,30 @@ const jwt = require("jsonwebtoken");
 
 
 
+
 const secret = process.env.JWT_SECRET;
 // there is a middleware for jwt validation token 
-const verifyToken= (req,res,next)=>{
+// JWT validation middleware
+const verifyToken = (req, res, next) => {
   const token = req.headers['authorization'];
-  if(!token){
-    return res.status(401).json({error:'Unauthorized'});
+  if (!token) {
+      return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
-  jwt.verify(token.split("")[1],secret,(err,decoded)=>{
-    if(err){
-      return res.status(401).json({error:'Unauthorized'});
-    }
-    console.log("Decoded token:", decoded);
-    req.userId=decoded.id;
-    next();
-  })
-}
+
+  const tokenParts = token.split(' ');
+  if (tokenParts[0] !== 'Bearer' || !tokenParts[1]) {
+      return res.status(401).json({ error: 'Unauthorized: Malformed token' });
+  }
+
+  jwt.verify(tokenParts[1], secret, (err, decoded) => {
+      if (err) {
+          return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+      }
+
+      req.userId = decoded.id; // Add user ID to request object
+      next();
+  });
+};
 
 // controller for the creating user  
 const createUser=async(req,res)=>{
@@ -46,7 +54,7 @@ const createUser=async(req,res)=>{
     });
     await newUser.save();
     //generate a jwt 
-    const token=jwt.sign({id:newUser._id},secret);
+    const token=jwt.sign({id:newUser._id},secret,{expiresIn:'5d'});
     res.status(200).json({token});
   }catch(err){
     console.error(err);
@@ -74,7 +82,7 @@ if(!passwordmatch){
   return res.status(401).json({error:'Invalid credentials'});
 }
 
-const token =jwt.sign({id: user._id },secret);
+ const token =jwt.sign({id: user._id },secret,{expiresIn:'5d'});
 res.status(200).json({token});
 
 }catch(error){
@@ -110,9 +118,17 @@ res.status(201).json({ message: 'Medicine saved successfully' });
 
 
 
+// I want to get all the medicine belonging to a particular user 
+const usersdrugs=async(req,res)=>{
+  
+
+
+}
+
 
 module.exports={
   createUser,
   login,
   addmedicine:[verifyToken,addmedicine],
+  usersdrugs:[verifyToken,usersdrugs],
 }
