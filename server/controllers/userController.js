@@ -120,7 +120,17 @@ res.status(201).json({ message: 'Medicine saved successfully' });
 
 // I want to get all the medicine belonging to a particular user 
 const usersdrugs=async(req,res)=>{
-  
+  try{
+const usersMedicine = await Medicine.find({owner:req.userId});
+if(!usersMedicine.length){
+console.log("There is no medicine in the database for you");
+return res.status(404).json({message:'No medicine available'});
+}
+res.status(201).json({usersMedicine});
+  }catch(error){
+console.log(error);
+return res.status(404).json({error:'There was an error'});
+  }
 
 
 }
