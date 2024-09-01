@@ -153,6 +153,31 @@ return res.status(404).json({error:'There was an error'});
 }
 
 // edit the data for a particular for that day 
+const updatePatients = async (req, res) => {
+  const {insuranceNumber} = req.params; // Assume the patient ID is passed as a parameter 
+
+
+}
+
+const getSinglePatient = async (req, res) => {
+  const { insuranceNumber } = req.params;
+  try {
+    // Use findOne to search for a single patient with the matching insurance number
+    const singlePatient = await Patient.findOne({ insuranceNumber });
+    
+    // If no patient is found, return a 404 error
+    if (!singlePatient) {
+      return res.status(404).json({ message: 'No data available' });
+    }
+    
+    // If the patient is found, return the patient data
+    res.status(200).json({ singlePatient });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'There was an error' });
+  }
+};
+
 
 
 
@@ -181,4 +206,5 @@ module.exports={
   login,
   sendPatientsDetails:[verifyToken,sendPatientsDetails],
   allPatients:[verifyToken,allPatients],
+  getSinglePatient:[verifyToken,getSinglePatient],
 }

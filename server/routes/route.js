@@ -8,5 +8,6 @@ router.post("/create",controller.createUser);
 router.post("/login",controller.login);
 router.post("/patient-details",controller.sendPatientsDetails);
 router.get("/patients",controller.allPatients);
+router.get("/patient/:insuranceNumber",controller.getSinglePatient);
 
 module.exports=router;
