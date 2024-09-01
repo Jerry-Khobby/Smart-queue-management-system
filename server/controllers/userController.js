@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const Medicine = require("../models/medicine");
+const Patient = require("../models/patient");
 const dotenv = require("dotenv").config();
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken");
@@ -34,8 +34,8 @@ const verifyToken = (req, res, next) => {
 
 // controller for the creating user  
 const createUser=async(req,res)=>{
-  const {password,name,email,role,contactNumber,department,shiftStartTime,shiftEndTime,profileImage}=req.body;
-  if(!password||!name||!email ||!role ||!department||!shiftStartTime||!shiftEndTime ||!contactNumber){
+  const {password,name,email,role,contactNumber,department,profileImage}=req.body;
+  if(!password||!name||!email ||!role ||!department||!contactNumber){
     return res.status(400).json({error:'All fields are required'});
   }
   try{
@@ -93,34 +93,73 @@ res.status(200).json({token});
 }
 
 
-const addmedicine=async(req,res)=>{
-const {name,medicineGroup,description}=req.body;
-if(!name || !medicineGroup || !description){
-  return res.status(401).json({error:'All fields are required'});
-}
-try{
-  const user = await User.findById(req.userId);
-  if(!user){
-    return res.status(404).json({message:'User not found'});
-  }
-  const medicine = new Medicine({
-    name:name,
-    description:description,
-    medicineGroup:medicineGroup,
-    owner:user._id,
+const sendPatientsDetails = async (req, res) => {
+  const { name, insuranceNumber, age, gender, address, phone, symptoms, diseaseDescription, queueNumber, diseaseStartDate } = req.body;
   
-  });
+  // Validate required fields
+  if (!name || !insuranceNumber || !age || !gender || !address || !phone || !symptoms || !diseaseDescription || !queueNumber || !diseaseStartDate) {
+    return res.status(401).json({ error: 'All fields are required' });
+  }
+  
+  try {
+    // Find the user who is recording the patient details
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Create a new patient record
+    const patient = new Patient({
+      name: name,
+      insuranceNumber: insuranceNumber,
+      age: age,
+      gender: gender,
+      address: address,
+      phone: phone,
+      symptoms: symptoms,
+      diseaseDescription: diseaseDescription,
+      queueNumber: queueNumber,
+      diseaseStartDate: diseaseStartDate,
+      filled_in: user._id, // Reference to the user who filled in the details
+    });
 
-  await medicine.save();
-res.status(201).json({ message: 'Medicine saved successfully' });
-}catch(error){
-  res.status(500).json({ message: error.message });
-}
-}
-
-
+    // Save the patient record to the database
+    await patient.save();
+    
+    // Respond with success message
+    res.status(201).json({ message: 'Patient details saved successfully' });
+    
+  } catch (error) {
+    // Handle errors and respond with an error message
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // I want to get all the medicine belonging to a particular user 
+
+
+const allPatients = async (req,res)=>{
+  try{
+    const allPatients = await Patient.find().sort({queueNumber:1});
+    if(!allPatients.length){
+      console.log("There is no Patient around");
+      return res.status(404).json({message:'No medicine available'});
+    }
+    res.status(200).json(allPatients);
+  }catch(err){
+console.error(err);
+return res.status(404).json({error:'There was an error'});
+  }
+}
+
+// edit the data for a particular for that day 
+
+
+
+
+
+
+
 const usersdrugs=async(req,res)=>{
   try{
 const usersMedicine = await Medicine.find({owner:req.userId});
@@ -134,13 +173,12 @@ console.log(error);
 return res.status(404).json({error:'There was an error'});
   }
 
-
 }
 
 
 module.exports={
   createUser,
   login,
-  addmedicine:[verifyToken,addmedicine],
-  usersdrugs:[verifyToken,usersdrugs],
+  sendPatientsDetails:[verifyToken,sendPatientsDetails],
+  allPatients:[verifyToken,allPatients],
 }

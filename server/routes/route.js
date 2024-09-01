@@ -4,9 +4,9 @@ const controller= require("../controllers/userController");
 
 
 
-router.post("/",controller.createUser);
+router.post("/create",controller.createUser);
 router.post("/login",controller.login);
-router.post("/newdrug",controller.addmedicine);
-router.get("/drug",controller.usersdrugs);
+router.post("/patient-details",controller.sendPatientsDetails);
+router.get("/patients",controller.allPatients);
 
 module.exports=router;
