@@ -154,10 +154,39 @@ return res.status(404).json({error:'There was an error'});
 
 // edit the data for a particular for that day 
 const updatePatients = async (req, res) => {
-  const {insuranceNumber} = req.params; // Assume the patient ID is passed as a parameter 
+  const { insuranceNumber } = req.params;
+  const updates = req.body; // The fields you want to update
+  
+  try {
+    // Fetch the patient record by insuranceNumber
+    const patient = await Patient.findOne({ insuranceNumber });
+    
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+    
+    // Check if the recordingDate is today
+    const today = new Date().setHours(0, 0, 0, 0); // Start of today
+    const recordingDate = new Date(patient.recordingDate).setHours(0, 0, 0, 0); // Start of the recording date
+    
+    if (today !== recordingDate) {
+      return res.status(403).json({ message: 'You can only update records for today.' });
+    }
+    
+    // If the recordingDate is today, update the patient record
+    Object.keys(updates).forEach(key => {
+      patient[key] = updates[key];
+    });
+    
+    await patient.save();
+    
+    res.status(200).json({ message: 'Patient record updated successfully', patient });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'There was an error updating the patient record' });
+  }
+};
 
-
-}
 
 const getSinglePatient = async (req, res) => {
   const { insuranceNumber } = req.params;
@@ -207,4 +236,6 @@ module.exports={
   sendPatientsDetails:[verifyToken,sendPatientsDetails],
   allPatients:[verifyToken,allPatients],
   getSinglePatient:[verifyToken,getSinglePatient],
+  updatePatients:[verifyToken,updatePatients],
+
 }
