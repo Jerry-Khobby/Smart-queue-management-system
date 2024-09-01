@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const Schema =mongoose.Schema;
 const User = new Schema({
   userId:{
-type:monogoose.Schema.Types.ObjectId,
+type:mongoose.Schema.Types.ObjectId,
 auto:true,
 unique:true,
 },
@@ -39,14 +39,6 @@ unique:true,
     type: String,
     required: true, // e.g., 'Emergency', 'Pediatrics', 'General Medicine'
   },  
-  shiftStartTime: {
-    type: Date,
-    required: true,
-  },
-  shiftEndTime: {
-    type: Date,
-    required: true,
-  },
   profileImage: {
     type: String, // URL to the health worker's profile image
   },

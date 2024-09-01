@@ -34,8 +34,8 @@ const verifyToken = (req, res, next) => {
 
 // controller for the creating user  
 const createUser=async(req,res)=>{
-  const {password,name,email}=req.body;
-  if(!password||!name||!email){
+  const {password,name,email,role,contactNumber,department,shiftStartTime,shiftEndTime,profileImage}=req.body;
+  if(!password||!name||!email ||!role ||!department||!shiftStartTime||!shiftEndTime ||!contactNumber){
     return res.status(400).json({error:'All fields are required'});
   }
   try{
@@ -51,6 +51,10 @@ const createUser=async(req,res)=>{
       name:name,
       password:hashedPassword,
       email:email,
+      role:role,
+      contactNumber:contactNumber,
+      department:department,
+      profileImage:profileImage,
     });
     await newUser.save();
     //generate a jwt 
@@ -70,8 +74,6 @@ if(!email||!password){
 }
 // try and check for the user 
 try{
-
-
 const user = await User.findOne({email:email});
 if(!user){
   return res.status(401).json({error:'Invalid credentials'});
