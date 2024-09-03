@@ -173,6 +173,11 @@ const updatePatients = async (req, res) => {
       return res.status(403).json({ message: 'You can only update records for today.' });
     }
     
+      // Remove insuranceNumber from updates if it exists
+      if (updates.insuranceNumber) {
+        delete updates.insuranceNumber;
+        return res.status(405).json({error:'Health Insurance Number cannot be updated'});
+      }
     // If the recordingDate is today, update the patient record
     Object.keys(updates).forEach(key => {
       patient[key] = updates[key];
@@ -206,6 +211,9 @@ const getSinglePatient = async (req, res) => {
     return res.status(500).json({ error: 'There was an error' });
   }
 };
+
+
+
 
 
 
