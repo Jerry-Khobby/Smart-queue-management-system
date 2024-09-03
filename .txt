@@ -1,0 +1,3 @@
+When the patient details is been viewed by the doctor, he issues drugs 
+And after that , the patient goes to the pharmacy to collect it 
+and then leaves the hospital 

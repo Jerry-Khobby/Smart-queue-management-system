@@ -212,6 +212,42 @@ const getSinglePatient = async (req, res) => {
   }
 };
 
+// Now when the doctor receives this, the doctor will prescribe the drugs for the patient 
+const prescribeMedication = async (req, res) => {
+  const { insuranceNumber } = req.params;
+  const { drugName, dosage, frequency } = req.body;
+
+  try {
+    // Find the patient by insuranceNumber
+    const patient = await Patient.findOne({ insuranceNumber });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    // Create a new Medication record
+    const medication = new Medication({
+      drugName,
+      dosage,
+      frequency,
+      prescribedBy: req.userId, // Assuming the doctor's ID is stored in req.userId
+      patient: patient._id,
+    });
+
+    // Save the medication
+    await medication.save();
+
+    // Optionally, add this medication to the patient's record
+    patient.medications.push(medication._id);
+    await patient.save();
+
+    res.status(201).json({ message: "Medication prescribed successfully", medication });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "There was an error prescribing the medication" });
+  }
+};
+
+
 
 
 
@@ -245,5 +281,6 @@ module.exports={
   allPatients:[verifyToken,allPatients],
   getSinglePatient:[verifyToken,getSinglePatient],
   updatePatients:[verifyToken,updatePatients],
+  prescribeMedication:[verifyToken,prescribeMedication],
 
 }

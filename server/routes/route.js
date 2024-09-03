@@ -10,5 +10,6 @@ router.post("/patient-details",controller.sendPatientsDetails);
 router.get("/patients",controller.allPatients);
 router.get("/patient/:insuranceNumber",controller.getSinglePatient);
 router.post("/update-patient/:insuranceNumber",controller.updatePatients);
+router.post("/patient-perscribe/:insuranceNumber",controller.prescribeMedication);
 
 module.exports=router;

@@ -30,3 +30,6 @@ default:Date.now,
     required:true,
   }
 })
+
+
+module.exports = mongoose.model("Medication",MedicationSchema);

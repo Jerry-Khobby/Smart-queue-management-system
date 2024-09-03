@@ -53,7 +53,13 @@ required:true,
     type: mongoose.Schema.Types.ObjectId,
     ref: "User", // References the User model (e.g., receptionist, nurse)
     required: true,
-  }
+  },
+  medications: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Medication",
+    },
+  ],
 });
 
 PatientSchema.index({ queueNumber: 1, recordingDate: 1 }, { unique: true });
