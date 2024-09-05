@@ -1,43 +1,28 @@
-import React, { useEffect,useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect,useContext } from 'react';
+import { Navigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 const QueuePage = () => {
-  const navigate = useNavigate();
-  const [data, setData] = useState([]);
+  const { token, loading } = useContext(AuthContext);
 
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/patients", {
-          withCredentials: true
-        });
-        if (response.status === 200) {
-          // Handle successful response
-        } else if (response.status === 401) {
-          console.log("Token expired or invalid, logging out...");
-          navigate("/login");
-        } else {
-          console.log("Failed to fetch protected data");
-        }
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          console.log("Token expired or invalid, logging out...");
-          navigate("/login");
-        } else {
-          console.error("Error fetching data:", error);
-        }
-      }
-    };
-    
-    fetchUserData();
-  }, [navigate]); // Adding navigate as a dependency
+  if(loading){
+    return (
+      <div className='flex justify-center items-center min-h-screen'>
+        <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-20 w-20"></div>
+      </div>
+    );
+  }
+
+  if(!token){
+    return <Navigate to="/login" replace/>
+  }
+ 
 
   return (
     <div>
       {/* Your component content */}
-      {/** when the token is not available the app must make fast and detect it and work on that my next step for this project  */}
+      <h1>Hello World</h1>
     </div>
   );
 };

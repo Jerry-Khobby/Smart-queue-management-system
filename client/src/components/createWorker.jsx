@@ -1,11 +1,12 @@
-import React,{useState} from 'react'
+import React,{useState,useContext} from 'react'
 import axios from 'axios';
-import {Link,useNavigation} from "react-router-dom";
+import {Link,useNavigate} from "react-router-dom";
+import { AuthContext } from '../context/AuthContext';
 
 
 
 const UserAdditionForm = () => {
-  const navigate= useNavigation();
+  const navigate= useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     role: 'receptionist', // Default role set to 'receptionist'
@@ -17,6 +18,7 @@ const UserAdditionForm = () => {
     profileImage: ''
   });
 
+  const {setToken} = useContext(AuthContext);
   const [responseMessage, setResponseMessage] = useState(null);
   const [responseType, setResponseType] = useState('success');
 
@@ -58,14 +60,11 @@ const UserAdditionForm = () => {
         contactNumber: formData.contactNumber,
         department: formData.department,
         profileImage: formData.profileImage,
-      }, {
-        withCredentials: true,
       });
 
       if (response.status === 200) {
         setResponseMessage('User added successfully!');
         setResponseType('success');
-
         // Clear the form after successful submission
         setFormData({
           name: '',
@@ -77,6 +76,8 @@ const UserAdditionForm = () => {
           department: '',
           profileImage: ''
         });
+        setToken(response.data.token);
+        localStorage.setItem("token",response.data.token);
         navigate("/");
       } else {
         setResponseMessage(response.error || 'Failed to add user');
@@ -84,6 +85,8 @@ const UserAdditionForm = () => {
       }
 
     } catch (e) {
+      setToken(null);
+      localStorage.removeItem("token");
       setResponseMessage('There was an error in submitting the form.');
       setResponseType('error');
     }

@@ -1,6 +1,7 @@
-import React,{useState} from 'react'
+import React,{useState,useContext} from 'react'
 import axios from 'axios';
 import {Link,useNavigate} from "react-router-dom";
+import { AuthContext } from '../context/AuthContext';
 
 
 
@@ -14,6 +15,7 @@ const UserLoginForm = () => {
 
   const [responseMessage, setResponseMessage] = useState(null);
   const [responseType, setResponseType] = useState('success');
+  const {setToken} = useContext(AuthContext);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,25 +40,27 @@ const UserLoginForm = () => {
         email: formData.email,
         password: formData.password, // Only one password is needed for submission
       }, {
-        withCredentials: true,
+       /*  withCredentials: true, */
       });
 
       if (response.status === 200) {
         setResponseMessage('Logged in successfully');
         setResponseType('success');
-
+        setToken(response.data.token);
+        localStorage.setItem("token", response.data.token);
+        navigate("/");
         // Clear the form after successful submission
         setFormData({
           email: '',
           password: '',
         });
-        navigate("/");
       } else {
         setResponseMessage(response.error || 'Failed to login');
         setResponseType('error');
       }
-
-    } catch (e) {
+    } catch (error) {
+      setToken(null);
+      localStorage.removeItem("token");
       setResponseMessage('There was an error in loggin in');
       setResponseType('error');
     }
