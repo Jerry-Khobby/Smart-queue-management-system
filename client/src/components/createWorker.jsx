@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React,{useState} from 'react'
 import axios from 'axios';
+import {Link} from "react-router-dom";
+
+
 
 const UserAdditionForm = () => {
   const [formData, setFormData] = useState({
     name: '',
-    role: ['receptionist'], // Default role set to 'receptionist'
+    role: 'receptionist', // Default role set to 'receptionist'
     email: '',
     password: '',
-    password_two:'',
+    password_two: '',
     contactNumber: '',
     department: '',
     profileImage: ''
@@ -15,22 +18,14 @@ const UserAdditionForm = () => {
 
   const [responseMessage, setResponseMessage] = useState(null);
   const [responseType, setResponseType] = useState('success');
-  const [passwordMatch, setPasswordMatch] = useState(true);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'role') {
-      // Handle multi-select change
-      const options = e.target.options;
-      const selectedRoles = [];
-      for  (let i = 0; i < options.length; i++) {
-        if (options[i].selected) {
-          selectedRoles.push(options[i].value);
-        }
-      }
+      // Handle single-select change
       setFormData({
         ...formData,
-        role: selectedRoles,
+        role: value,
       });
     } else {
       setFormData({
@@ -42,7 +37,7 @@ const UserAdditionForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !==formData.password_two) {
+    if (formData.password !== formData.password_two) {
       setResponseMessage('Passwords do not match');
       setResponseType('error');
 
@@ -53,8 +48,8 @@ const UserAdditionForm = () => {
       return;
     }
 
-    try{
-      const response = await axios.post("http://localhost:8000/create",{
+    try {
+      const response = await axios.post("http://localhost:8000/create", {
         name: formData.name,
         email: formData.email,
         password: formData.password, // Only one password is needed for submission
@@ -62,6 +57,8 @@ const UserAdditionForm = () => {
         contactNumber: formData.contactNumber,
         department: formData.department,
         profileImage: formData.profileImage,
+      }, {
+        withCredentials: true,
       });
 
       if (response.status === 200) {
@@ -71,7 +68,7 @@ const UserAdditionForm = () => {
         // Clear the form after successful submission
         setFormData({
           name: '',
-          role: ['receptionist'],
+          role: 'receptionist',
           email: '',
           password: '',
           password_two: '',
@@ -80,11 +77,11 @@ const UserAdditionForm = () => {
           profileImage: ''
         });
       } else {
-        setResponseMessage(response.data.error || 'Failed to add user');
+        setResponseMessage(response.error || 'Failed to add user');
         setResponseType('error');
       }
 
-    }catch(e){
+    } catch (e) {
       setResponseMessage('There was an error in submitting the form.');
       setResponseType('error');
     }
@@ -172,7 +169,7 @@ const UserAdditionForm = () => {
             <label className='text-md font-mono text-gray-700'>
               Select your role in the hospital: 
               <select name="role" value={formData.role} onChange={handleChange} required
-              className='  className="w-full p-2 border border-gray-600 rounded'
+              className="w-full p-2 border border-gray-600 rounded"
               >
                 <option value="receptionist">Receptionist</option>
                 <option value="nurse">Nurse</option>
@@ -188,7 +185,7 @@ const UserAdditionForm = () => {
         </form>
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
-            Already have an account? <a href="/login" className="text-blue-500 hover:underline">Login</a>
+            Already have an account? <Link to="/login" className="text-blue-500 hover:underline">Login</Link>
           </p>
         </div>
       </div>
