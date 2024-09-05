@@ -14,21 +14,29 @@ const secret = process.env.JWT_SECRET;
 // there is a middleware for jwt validation token 
 // JWT validation middleware
 const verifyToken = async (req, res, next) => {
-  const token = req.cookies.token; // Retrieve token from cookies
+  const token = req.headers["authorization"]; // Retrieve token from the Authorization header
 
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
 
+  const tokenParts = token.split(' '); // Correct splitting by space
+
+  if (tokenParts[0] !== 'Bearer' || !tokenParts[1]) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid token format' });
+  }
+
+  const actualToken = tokenParts[1]; // Get the actual token part
+
   try {
     // Check if the token is blacklisted
-    const isBlacklisted = await Blacklist.findOne({ token });
+    const isBlacklisted = await Blacklist.findOne({ token: actualToken });
     if (isBlacklisted) {
       return res.status(401).json({ error: 'Unauthorized: Token has been invalidated' });
     }
 
     // Verify the token
-    jwt.verify(token, secret, (err, decoded) => {
+    jwt.verify(actualToken, secret, (err, decoded) => {
       if (err) {
         return res.status(401).json({ error: 'Unauthorized: Invalid token' });
       }
@@ -41,6 +49,7 @@ const verifyToken = async (req, res, next) => {
     res.status(500).json({ error: 'Token verification failed' });
   }
 };
+
 
 
 
@@ -71,9 +80,8 @@ const createUser= async(req,res)=>{
     });
     await newUser.save();
     //generate a jwt 
-    const token=jwt.sign({id:newUser._id},secret,{expiresIn:'5d'});
-    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'Strict' });
-    res.status(200).json({message:'Signup successfully'});
+    const token=jwt.sign({id:newUser._id},secret,{expiresIn:'1d'});
+    res.status(200).json({message:'Signup successfully',token:token});
 
   }catch(err){
     console.error(err);
@@ -99,9 +107,8 @@ if(!passwordmatch){
   return res.status(401).json({error:'Invalid credentials'});
 }
 
- const token =jwt.sign({id: user._id },secret,{expiresIn:'5d'});
-res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'Strict' });
-res.status(200).json({message:'Login successful'});
+ const token =jwt.sign({id: user._id },secret,{expiresIn:'1d'});
+res.status(200).json({message:'Login successful',token: token});
 
 }catch(error){
   res.status(500).json({ error: 'Internal server error' });
