@@ -1,10 +1,11 @@
 import React,{useState} from 'react'
 import axios from 'axios';
-import {Link} from "react-router-dom";
+import {Link,useNavigate} from "react-router-dom";
 
 
 
 const UserLoginForm = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -49,6 +50,7 @@ const UserLoginForm = () => {
           email: '',
           password: '',
         });
+        navigate("/");
       } else {
         setResponseMessage(response.error || 'Failed to login');
         setResponseType('error');

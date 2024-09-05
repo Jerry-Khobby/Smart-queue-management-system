@@ -1,10 +1,11 @@
 import React,{useState} from 'react'
 import axios from 'axios';
-import {Link} from "react-router-dom";
+import {Link,useNavigation} from "react-router-dom";
 
 
 
 const UserAdditionForm = () => {
+  const navigate= useNavigation();
   const [formData, setFormData] = useState({
     name: '',
     role: 'receptionist', // Default role set to 'receptionist'
@@ -76,6 +77,7 @@ const UserAdditionForm = () => {
           department: '',
           profileImage: ''
         });
+        navigate("/");
       } else {
         setResponseMessage(response.error || 'Failed to add user');
         setResponseType('error');
