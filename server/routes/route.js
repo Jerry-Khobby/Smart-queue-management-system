@@ -10,6 +10,8 @@ router.post("/patient-details",controller.sendPatientsDetails);
 router.get("/patients",controller.allPatients);
 router.get("/patient/:insuranceNumber",controller.getSinglePatient);
 router.post("/update-patient/:insuranceNumber",controller.updatePatients);
-router.post("/patient-perscribe/:insuranceNumber",controller.prescribeMedication);
+router.post("/patient-prescribe/:insuranceNumber",controller.prescribeMedication);
+router.patch("/prescription/:insuranceNumber",controller.donePrescription);
+router.put("/logout",controller.logout);
 
 module.exports=router;

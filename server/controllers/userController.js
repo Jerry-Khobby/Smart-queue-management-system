@@ -3,6 +3,8 @@ const Patient = require("../models/patient");
 const dotenv = require("dotenv").config();
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken");
+const Medication = require("../models/medicine");
+const Blacklist =require("../models/blacklist");
 
 
 
@@ -11,29 +13,40 @@ const jwt = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 // there is a middleware for jwt validation token 
 // JWT validation middleware
-const verifyToken = (req, res, next) => {
-  const token = req.headers['authorization'];
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies.token; // Retrieve token from cookies
+
   if (!token) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' });
+    return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
 
-  const tokenParts = token.split(' ');
-  if (tokenParts[0] !== 'Bearer' || !tokenParts[1]) {
-      return res.status(401).json({ error: 'Unauthorized: Malformed token' });
-  }
+  try {
+    // Check if the token is blacklisted
+    const isBlacklisted = await Blacklist.findOne({ token });
+    if (isBlacklisted) {
+      return res.status(401).json({ error: 'Unauthorized: Token has been invalidated' });
+    }
 
-  jwt.verify(tokenParts[1], secret, (err, decoded) => {
+    // Verify the token
+    jwt.verify(token, secret, (err, decoded) => {
       if (err) {
-          return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
       }
 
       req.userId = decoded.id; // Add user ID to request object
       next();
-  });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Token verification failed' });
+  }
 };
 
+
+
+
 // controller for the creating user  
-const createUser=async(req,res)=>{
+const createUser= async(req,res)=>{
   const {password,name,email,role,contactNumber,department,profileImage}=req.body;
   if(!password||!name||!email ||!role ||!department||!contactNumber){
     return res.status(400).json({error:'All fields are required'});
@@ -59,7 +72,9 @@ const createUser=async(req,res)=>{
     await newUser.save();
     //generate a jwt 
     const token=jwt.sign({id:newUser._id},secret,{expiresIn:'5d'});
-    res.status(200).json({token});
+    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'Strict' });
+    res.status(200).json({message:'Signup successfully'});
+
   }catch(err){
     console.error(err);
     res.status(500).json({error:'Internal server error'});
@@ -85,7 +100,8 @@ if(!passwordmatch){
 }
 
  const token =jwt.sign({id: user._id },secret,{expiresIn:'5d'});
-res.status(200).json({token});
+res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'Strict' });
+res.status(200).json({message:'Login successful'});
 
 }catch(error){
   res.status(500).json({ error: 'Internal server error' });
@@ -249,29 +265,79 @@ const prescribeMedication = async (req, res) => {
 
 
 
+const donePrescription = async (req, res) => {
+  const { insuranceNumber } = req.params;
+  const { status, dispensedDate } = req.body;
+
+  try {
+    // Find the patient by insuranceNumber
+    const patient = await Patient.findOne({ insuranceNumber });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    // Find the medication record for the patient that needs to be updated
+    const medication = await Medication.findOne({ patient: patient._id, status: "Prescribed" });
+    if (!medication) {
+      return res.status(404).json({ message: "No prescribed medication found for this patient" });
+    }
+
+    // Update the medication record with pharmacist's details
+    medication.status = status || "Dispensed";  // Set status to "Dispensed" by default
+    medication.dispensedDate = dispensedDate || new Date();  // Use current date if not provided
+    medication.dispensedBy = req.userId;  // Assuming the pharmacist's ID is stored in req.userId
+
+    // Save the updated medication record
+    await medication.save();
+
+    // Optionally, update the patient's record to mark the prescription process as complete
+    patient.prescriptionComplete = true;
+    await patient.save();
+
+    res.status(200).json({ message: "Prescription process completed successfully", medication });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "There was an error completing the prescription process" });
+  }
+};
 
 
+// creating the Logout function for me  using jwt 
+const logout = async (req, res) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(' ')[1];
 
-
-
-
-
-
-
-const usersdrugs=async(req,res)=>{
-  try{
-const usersMedicine = await Medicine.find({owner:req.userId});
-if(!usersMedicine.length){
-console.log("There is no medicine in the database for you");
-return res.status(404).json({message:'No medicine available'});
-}
-res.status(201).json({usersMedicine});
-  }catch(error){
-console.log(error);
-return res.status(404).json({error:'There was an error'});
+  if (!token) {
+    return res.status(400).json({ message: "No token provided" });
   }
 
-}
+  try {
+    const decoded = jwt.verify(token, secret);
+    
+    // Add the token to the blacklist with its expiration time
+    const expiresAt = new Date(decoded.exp * 1000); // Token expiration time
+    const blacklistedToken = new Blacklist({ token, expiresAt });
+
+    await blacklistedToken.save();
+
+    res.status(200).json({ message: "You have been logged out" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Logout failed" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 module.exports={
@@ -282,5 +348,7 @@ module.exports={
   getSinglePatient:[verifyToken,getSinglePatient],
   updatePatients:[verifyToken,updatePatients],
   prescribeMedication:[verifyToken,prescribeMedication],
+  donePrescription:[verifyToken,donePrescription],
+  logout:[verifyToken,logout]
 
 }

@@ -13,7 +13,7 @@ const cookieParser = require('cookie-parser')
 // defining all the middlewares 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
-app.use(cookieParser())
+app.use(cookieParser());
 
 // I want to use the sessions 
 app.use(session({

@@ -15,7 +15,7 @@ unique:true,
   },
   role: {
     type: String,
-    enum: ['receptionist', 'nurse', 'doctor', 'admin'],
+    enum: ['receptionist', 'nurse', 'doctor', 'admin','pharmacist'],
     required: true,
   },
   email:{
