@@ -1,4 +1,4 @@
-import React,{useState,useContext} from 'react'
+import React,{useState,useContext,useEffect} from 'react'
 import axios from 'axios';
 import {Link,useNavigate} from "react-router-dom";
 import { AuthContext } from '../context/AuthContext';
@@ -18,9 +18,15 @@ const UserAdditionForm = () => {
     profileImage: ''
   });
 
-  const {setToken} = useContext(AuthContext);
+  const {setToken,token} = useContext(AuthContext);
   const [responseMessage, setResponseMessage] = useState(null);
   const [responseType, setResponseType] = useState('success');
+
+  useEffect(() => {
+    if (token || localStorage.getItem("token")) {
+      navigate("/", { replace: true });
+    }
+  }, [token, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,7 +84,7 @@ const UserAdditionForm = () => {
         });
         setToken(response.data.token);
         localStorage.setItem("token",response.data.token);
-        navigate("/");
+        navigate("/",{replace:true});
       } else {
         setResponseMessage(response.error || 'Failed to add user');
         setResponseType('error');
