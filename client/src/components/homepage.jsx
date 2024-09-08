@@ -1,6 +1,7 @@
 import React, { useEffect,useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import Navbar from './homepage/navbar';
 
 const QueuePage = () => {
   const { token, loading } = useContext(AuthContext);
@@ -21,8 +22,7 @@ const QueuePage = () => {
 
   return (
     <div>
-      {/* Your component content */}
-      <h1>Hello World</h1>
+      <Navbar/>
     </div>
   );
 };
