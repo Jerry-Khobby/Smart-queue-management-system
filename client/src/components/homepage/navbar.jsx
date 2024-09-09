@@ -1,13 +1,8 @@
-import React,{useState} from 'react'
+import React from 'react'
 /* import {Button,Tooltip} from "@mui/material" */
 import UserIcon from './usericon';
-import { GiHamburgerMenu } from "react-icons/gi";
+
 const Navbar = () => {
-  const [searchValue,setSearchValue]=useState("");
-  const handleSearch = (e) => {
-    const inputValue = e.target.value;
-    setSearchValue(inputValue); // Update searchItem directly with the input value
-  };
   return (  
     <div>
     <div

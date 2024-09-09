@@ -3,6 +3,8 @@ import { FaRegUserCircle } from "react-icons/fa";
 import { IoIosNotifications } from "react-icons/io";
 import { Box } from "@mui/material";
 import { GiHamburgerMenu } from "react-icons/gi";
+import { RxCross1 } from "react-icons/rx";
+import { MdOutlineSick } from "react-icons/md";
 
 const UserIcon = () => {
   const [showMenu, setShowMenu] = useState(false);
@@ -89,13 +91,24 @@ const UserIcon = () => {
       {/* Drawer Menu */}
       {showMenu && (
         <div
-          className="fixed top-0 right-0 h-full w-56 bg-gray-50 p-4"
+          className="fixed top-0 right-0 h-full w-64 bg-gray-50 p-4"
           style={{
             zIndex: 1000,
             transform: showMenu ? 'translateX(0)' : 'translateX(100%)',
             transition: 'transform 0.3s ease-in-out'
           }}
         >
+          <div className='items-center flex flex-row px-5 mt-5'>
+            <MdOutlineSick className='mr-3 text-black' size={35}/>
+          <h4 className='text-2xl font-mono'>Feedback</h4>
+          </div>
+          <ul className='space-y-4 flex-grow'>
+            <li>
+              {/** I want an icon here  */}
+              {/** a text here  */}
+            </li>
+
+          </ul>
         </div>
       )}
     </div>
