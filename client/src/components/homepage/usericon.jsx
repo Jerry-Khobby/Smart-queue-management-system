@@ -2,8 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { FaRegUserCircle } from "react-icons/fa";
 import { IoIosNotifications } from "react-icons/io";
 import { Box } from "@mui/material";
-import { GiHamburgerMenu } from "react-icons/gi";
-import { RxCross1 } from "react-icons/rx";
 import { MdOutlineSick } from "react-icons/md";
 
 const UserIcon = () => {
@@ -55,6 +53,7 @@ const UserIcon = () => {
         </div>
       </div>
       <div
+      ref={userMenuRef}
         style={{
           height: '35px',
           width: '35px',
@@ -64,30 +63,12 @@ const UserIcon = () => {
           borderRadius: '50%',
           cursor: 'pointer'
         }}
+        onClick={handleToggleMenu}
       >
         <Box>
           <FaRegUserCircle size={23} color='black' />
         </Box>
       </div>
-      <div
-        ref={userMenuRef}
-        style={{
-          height: '35px',
-          width: '35px',
-          alignItems: 'center',
-          display: 'flex',
-          justifyContent: 'flex-end',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          position: 'relative'
-        }}
-        onClick={handleToggleMenu}
-      >
-        <Box>
-          <GiHamburgerMenu size={23} color='black' />
-        </Box>
-      </div>
-
       {/* Drawer Menu */}
       {showMenu && (
         <div
