@@ -62,12 +62,14 @@ useEffect(() => {
     if (isNaN(updatedFormData.insuranceNumber) || updatedFormData.insuranceNumber.toString().length !== 8) {
       setResponseMessage('Insurance number must be 8 digits and a valid number.');
       setResponseType('error');
+      startMessageTimer(); // Start timer for clearing message
       return;
     }
   
     if (isNaN(updatedFormData.phone) || updatedFormData.phone.toString().length !== 10) {
       setResponseMessage('Phone number must be 10 digits.');
       setResponseType('error');
+      startMessageTimer(); // Start timer for clearing message
       return;
     }
   
@@ -79,11 +81,9 @@ useEffect(() => {
       });
   
       if (response?.status === 201) {
-        // Use optional chaining to safely access response data
         const message = response?.data?.message ?? 'Patient details added successfully!';
         setResponseMessage(message);
         setResponseType('success');
-  
         setFormData({
           name: '',
           insuranceNumber: '',
@@ -97,18 +97,30 @@ useEffect(() => {
           diseaseStartDate: '',
         });
       } else {
-        // Handle other error cases
         const errorMessage = response?.data?.error ?? 'Failed to add patient details';
         setResponseMessage(errorMessage);
         setResponseType('error');
       }
+  
+      startMessageTimer(); // Start timer for clearing message
+  
     } catch (error) {
-      // Handle errors returned from the backend
       const errorMessage = error?.response?.data?.error ?? 'There was an error submitting the form.';
       setResponseMessage(errorMessage);
       setResponseType('error');
+  
+      startMessageTimer(); // Start timer for clearing message
     }
   };
+  
+  // Function to clear the message after 7 seconds
+  const startMessageTimer = () => {
+    setTimeout(() => {
+      setResponseMessage('');
+      setResponseType('');
+    }, 7000); // 7000 milliseconds = 7 seconds
+  };
+  
   
   
   
