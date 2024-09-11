@@ -5,6 +5,7 @@ import { MdOutlineSick } from "react-icons/md";
 import { AiOutlineClose } from "react-icons/ai"; // Import close icon
 import { Box } from "@mui/material";
 import { FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const UserIcon = () => {
   const [showMenu, setShowMenu] = useState(false);
@@ -109,9 +110,9 @@ const UserIcon = () => {
               <h4 className='text-2xl font-mono'>Feedback</h4>
             </div>
             <ul className='space-y-4 flex-grow flex flex-col pt-10 gap-4'>
-              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
+              <Link to="/newpatient" className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
                 Record New Patient Details
-              </li>
+              </Link>
               <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
                 View Data for Patient
               </li>

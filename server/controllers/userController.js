@@ -117,89 +117,83 @@ res.status(200).json({message:'Login successful',token: token});
 
 
 const sendPatientsDetails = async (req, res) => {
-  const { name, insuranceNumber, age, gender, address, phone, symptoms, diseaseDescription, queueNumber, diseaseStartDate, recordingDate } = req.body;
-
-  // Validate required fields
-  if (!name || !insuranceNumber || !age || !gender || !address || !phone || !symptoms || !diseaseDescription || !queueNumber || !diseaseStartDate || !recordingDate) {
-    return res.status(400).json({ error: 'All fields are required' });
-  }
-
-  // Validate phone number (must be exactly 10 digits)
-  const phoneRegex = /^\d{10}$/;
-  if (!phoneRegex.test(phone)) {
-    return res.status(400).json({ error: 'Phone number must be exactly 10 digits' });
-  }
-
-  // Validate insurance number (must be exactly 8 digits)
-  const insuranceRegex = /^\d{8}$/;
-  if (!insuranceRegex.test(insuranceNumber)) {
-    return res.status(400).json({ error: 'Insurance number must be exactly 8 digits' });
-  }
-
-  // Validate insuranceNumber (must be a valid integer and not float)
-  if (!Number.isInteger(insuranceNumber)) {
-    return res.status(400).json({ error: 'Insurance number must be a valid integer' });
-  }
-
-  // Validate age (must be a valid integer and not float)
-  if (!Number.isInteger(age)) {
-    return res.status(400).json({ error: 'Age must be a valid integer' });
-  }
-
-  // Validate queueNumber (must be a valid integer and not float)
-  if (!Number.isInteger(queueNumber)) {
-    return res.status(400).json({ error: 'Queue number must be a valid integer' });
-  }
-
   try {
-    // Find the user who is recording the patient details
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    // Destructure the data coming from the frontend
+    const { 
+      name, 
+      insuranceNumber, 
+      age, 
+      gender, 
+      address, 
+      phone, 
+      symptoms, 
+      diseaseDescription, 
+      queueNumber, 
+      diseaseStartDate 
+    } = req.body;
+
+    // Parse fields that should be integers
+    const parsedInsuranceNumber = parseInt(insuranceNumber, 10);
+    const parsedAge = parseInt(age, 10);
+    const parsedQueueNumber = parseInt(queueNumber, 10);
+
+    // Validate the parsed fields
+    if (isNaN(parsedInsuranceNumber) || parsedInsuranceNumber.toString().length !== 8) {
+      return res.status(400).json({ error: "Insurance number must be 8 digits and a valid number." });
     }
 
-    // Check if insuranceNumber already exists
-    const existingPatientByInsurance = await Patient.findOne({ insuranceNumber });
-    if (existingPatientByInsurance) {
-      return res.status(400).json({ error: 'Insurance number already exists' });
+    if (isNaN(phone) || phone.toString().length !== 10) {
+      return res.status(400).json({ error: "Phone number must be 10 digits." });
     }
 
-    // Check if queueNumber already exists for the same day
-    const existingPatientByQueue = await Patient.findOne({
-      queueNumber,
-      recordingDate: new Date(recordingDate).toISOString().split('T')[0] // Compare date only
+    if (isNaN(parsedAge)) {
+      return res.status(400).json({ error: "Age must be a valid integer." });
+    }
+
+    if (isNaN(parsedQueueNumber)) {
+      return res.status(400).json({ error: "Queue number must be a valid integer." });
+    }
+
+    // Assuming you want to add a unique queue number per day
+    const today = new Date().toISOString().split('T')[0]; // Format: 'YYYY-MM-DD'
+
+    const existingQueue = await Patient.findOne({
+      queueNumber: parsedQueueNumber,
+      recordingDate: today, // Assuming you store the date in a field like 'recordingDate'
     });
-    if (existingPatientByQueue) {
-      return res.status(400).json({ error: 'Queue number already taken for today' });
+
+    if (existingQueue) {
+      return res.status(400).json({ error: "Queue number already exists for today." });
     }
 
-    // Create a new patient record
+    // Save the patient details
     const patient = new Patient({
       name,
-      insuranceNumber,
-      age,
+      insuranceNumber: parsedInsuranceNumber,
+      age: parsedAge,
       gender,
       address,
       phone,
       symptoms,
       diseaseDescription,
-      queueNumber,
+      queueNumber: parsedQueueNumber,
       diseaseStartDate,
-      recordingDate,
-      filled_in: user._id, // Reference to the user who filled in the details
+      recordingDate: today,
+       // Automatically save the current date
+       filled_in:req.userId,
     });
 
-    // Save the patient record to the database
     await patient.save();
 
-    // Respond with success message
-    res.status(201).json({ message: 'Patient details saved successfully' });
-    
+    // Respond with success
+    return res.status(201).json({ message: "Patient details saved successfully!" });
   } catch (error) {
-    // Handle errors and respond with an error message
-    res.status(500).json({ message: error.message });
+    console.error("Error saving patient details:", error);
+    return res.status(500).json({ error: "Server error. Please try again later." });
   }
 };
+
+
 
 
 
