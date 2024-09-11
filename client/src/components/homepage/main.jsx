@@ -20,10 +20,14 @@ const AllPatients = () => {
         },
       });
 
-      setData(response.data); 
+      if (response.status === 404) {
+        setError("No patients found in the database");
+      } else {
+        setData(response.data); 
+      } 
       setLoading(false);
     } catch (error) {
-      setError(error.message || "Error fetching data");
+      setError(error.response?.data?.message || "Error fetching data");
       setLoading(false);
     }
   };

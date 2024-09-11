@@ -212,7 +212,7 @@ const allPatients = async (req,res)=>{
     const allPatients = await Patient.find().sort({queueNumber:1,recordingDate:1});
     if(!allPatients.length){
       console.log("There is no Patient around");
-      return res.status(404).json({message:'No medicine available'});
+      return res.status(404).json({message:'No Patient available in the database'});
     }
     res.status(200).json(allPatients);
   }catch(err){
