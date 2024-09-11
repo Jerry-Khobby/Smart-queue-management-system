@@ -2,6 +2,7 @@ import React,{useState,useContext,useEffect} from 'react'
 import axios from 'axios';
 import {Link,useNavigate} from "react-router-dom";
 import { AuthContext } from '../context/AuthContext';
+import { setItem,getItem } from '../localStorageUtils';
 
 
 
@@ -18,7 +19,9 @@ const UserLoginForm = () => {
   const {setToken,token} = useContext(AuthContext);
 
   useEffect(() => {
-    if (token || localStorage.getItem("token")) {
+    const savedToken = getItem("token"); // Use the imported getItem function
+    if (savedToken) {
+      setToken(savedToken);
       navigate("/", { replace: true });
     }
   }, [token, navigate]);
@@ -39,6 +42,7 @@ const UserLoginForm = () => {
     }
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -53,8 +57,8 @@ const UserLoginForm = () => {
         setResponseMessage('Logged in successfully');
         setResponseType('success');
         setToken(response.data.token);
-        localStorage.setItem("token", response.data.token);
-        navigate("/",{replace:true});
+        setItem("token", response.data.token); // Use the imported setItem function
+        navigate("/", { replace: true });
         // Clear the form after successful submission
         setFormData({
           email: '',

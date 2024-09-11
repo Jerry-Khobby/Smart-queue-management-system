@@ -16,7 +16,6 @@ const Navbar = () => {
       display:"flex",
       alignItems:"center",
       justifyContent:"space-between",
-      padding:"0 5rem"
       }}>
       <div className='pl-3 cursor-pointer'>
           <img src="https://media.istockphoto.com/id/1359883064/vector/person-in-hospital-bed-patient-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=-KaAuvlh-YdUnWynZRO-40uIEMO8-a3EXLoxAoLvL0I=" alt="Logo " height={70} width={70}/>

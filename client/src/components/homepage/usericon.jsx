@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FaRegUserCircle } from "react-icons/fa";
 import { IoIosNotifications } from "react-icons/io";
-import { Box } from "@mui/material";
 import { MdOutlineSick } from "react-icons/md";
+import { AiOutlineClose } from "react-icons/ai"; // Import close icon
+import { Box } from "@mui/material";
+import { FaCog, FaSignOutAlt } from 'react-icons/fa';
 
 const UserIcon = () => {
   const [showMenu, setShowMenu] = useState(false);
   const userMenuRef = useRef(null);
+  const drawerRef = useRef(null); // Ref for drawer
 
   // Function to toggle the menu
   const handleToggleMenu = () => {
@@ -17,10 +20,13 @@ const UserIcon = () => {
     setShowMenu(false);
   };
 
-  // Close the drawer when clicking outside of it
+  // Close the drawer when clicking outside of it or on the overlay
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+      if (
+        (userMenuRef.current && !userMenuRef.current.contains(event.target)) &&
+        (drawerRef.current && !drawerRef.current.contains(event.target))
+      ) {
         closeMenu();
       }
     };
@@ -34,6 +40,7 @@ const UserIcon = () => {
 
   return (
     <div style={{ display: "flex", justifyContent: "flex-end", gap: '2px' }}>
+      {/* Notification Icon */}
       <div
         style={{
           height: '35px',
@@ -53,7 +60,7 @@ const UserIcon = () => {
         </div>
       </div>
       <div
-      ref={userMenuRef}
+        ref={userMenuRef}
         style={{
           height: '35px',
           width: '35px',
@@ -69,27 +76,61 @@ const UserIcon = () => {
           <FaRegUserCircle size={23} color='black' />
         </Box>
       </div>
-      {/* Drawer Menu */}
       {showMenu && (
-        <div
-          className="fixed top-0 right-0 h-full w-64 bg-gray-50 p-4"
-          style={{
-            zIndex: 1000,
-            transform: showMenu ? 'translateX(0)' : 'translateX(100%)',
-            transition: 'transform 0.3s ease-in-out'
-          }}
-        >
-          <div className='items-center flex flex-row px-5 mt-5'>
-            <MdOutlineSick className='mr-3 text-black' size={35}/>
-          <h4 className='text-2xl font-mono'>Feedback</h4>
-          </div>
-          <ul className='space-y-4 flex-grow'>
-            <li>
-              {/** I want an icon here  */}
-              {/** a text here  */}
-            </li>
+        <div>
+          <div
+            className="fixed inset-0 bg-black opacity-50"
+            style={{ zIndex: 999 }}
+            onClick={closeMenu}
+          ></div>
 
-          </ul>
+          {/* Drawer */}
+          <div
+            ref={drawerRef}
+            className="fixed top-0 right-0 h-full w-64 bg-gray-50 p-4"
+            style={{
+              zIndex: 1000,
+              transform: showMenu ? 'translateX(0)' : 'translateX(100%)',
+              transition: 'transform 0.3s ease-in-out'
+            }}
+          >
+            {/* Close Icon */}
+            <div className='flex justify-end'>
+              <AiOutlineClose
+                className="cursor-pointer"
+                size={24}
+                onClick={closeMenu}
+              />
+            </div>
+
+            {/* Drawer Content */}
+            <div className='items-center flex flex-row px-5 mt-5'>
+              <MdOutlineSick className='mr-3 text-black' size={35} />
+              <h4 className='text-2xl font-mono'>Feedback</h4>
+            </div>
+            <ul className='space-y-4 flex-grow flex flex-col pt-10 gap-4'>
+              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
+                Record New Patient Details
+              </li>
+              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
+                View Data for Patient
+              </li>
+              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
+                Record New Patient Details
+              </li>
+              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
+                Record New Patient Details
+              </li>
+              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
+                Record New Patient Details
+              </li>
+              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
+              <FaSignOutAlt className='mr-3 text-black' />
+                Logout
+              </li>
+
+            </ul>
+          </div>
         </div>
       )}
     </div>

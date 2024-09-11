@@ -8,7 +8,7 @@ const PatientSchema = new Schema({
     required: true,
   },
   insuranceNumber: {
-    type: String,
+    type: Number,
     required: true,
     unique: true,
   },

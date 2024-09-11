@@ -1,8 +1,8 @@
 import React,{useState,useContext,useEffect} from 'react'
 import axios from 'axios';
 import {Link,useNavigate} from "react-router-dom";
+import { setItem,getItem } from '../localStorageUtils';
 import { AuthContext } from '../context/AuthContext';
-
 
 
 const UserAdditionForm = () => {
@@ -23,7 +23,9 @@ const UserAdditionForm = () => {
   const [responseType, setResponseType] = useState('success');
 
   useEffect(() => {
-    if (token || localStorage.getItem("token")) {
+    const savedToken = getItem("token"); // Use the imported getItem function
+    if (savedToken) {
+      setToken(savedToken);
       navigate("/", { replace: true });
     }
   }, [token, navigate]);
@@ -83,8 +85,8 @@ const UserAdditionForm = () => {
           profileImage: ''
         });
         setToken(response.data.token);
-        localStorage.setItem("token",response.data.token);
-        navigate("/",{replace:true});
+        setItem("token", response.data.token); // Use the imported setItem function
+        navigate("/", { replace: true });
       } else {
         setResponseMessage(response.error || 'Failed to add user');
         setResponseType('error');
