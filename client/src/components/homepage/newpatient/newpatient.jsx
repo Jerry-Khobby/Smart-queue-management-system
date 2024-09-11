@@ -58,6 +58,7 @@ useEffect(() => {
       queueNumber: parseInt(formData.queueNumber, 10),
     };
   
+    // Validate before sending
     if (isNaN(updatedFormData.insuranceNumber) || updatedFormData.insuranceNumber.toString().length !== 8) {
       setResponseMessage('Insurance number must be 8 digits and a valid number.');
       setResponseType('error');
@@ -77,14 +78,12 @@ useEffect(() => {
         },
       });
   
-      if (response.status === 401) {
-        router('/login'); 
-        return;
-      }
-  
-      if (response.status === 201) {
-        setResponseMessage('Patient details added successfully!');
+      if (response?.status === 201) {
+        // Use optional chaining to safely access response data
+        const message = response?.data?.message ?? 'Patient details added successfully!';
+        setResponseMessage(message);
         setResponseType('success');
+  
         setFormData({
           name: '',
           insuranceNumber: '',
@@ -98,14 +97,20 @@ useEffect(() => {
           diseaseStartDate: '',
         });
       } else {
-        setResponseMessage(response.data.error || 'Failed to add patient details');
+        // Handle other error cases
+        const errorMessage = response?.data?.error ?? 'Failed to add patient details';
+        setResponseMessage(errorMessage);
         setResponseType('error');
       }
     } catch (error) {
-      setResponseMessage('There was an error submitting the form.');
+      // Handle errors returned from the backend
+      const errorMessage = error?.response?.data?.error ?? 'There was an error submitting the form.';
+      setResponseMessage(errorMessage);
       setResponseType('error');
     }
   };
+  
+  
   
   
 
