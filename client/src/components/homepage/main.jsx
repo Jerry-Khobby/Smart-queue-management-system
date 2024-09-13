@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getItem } from '../../localStorageUtils';
+import { Link } from 'react-router-dom';
 
 const AllPatients = () => {
   const [data, setData] = useState([]);
@@ -77,7 +78,7 @@ const AllPatients = () => {
               {/* Render patient cards */}
               <div className=" flex-row gap-2 flex  cursor-pointer">
                 {patients.map((patient) => (
-                  <div
+                  <Link  to={`/patient/${patient.insuranceNumber}`}
                     key={patient.id}
                     className="bg-white shadow-lg rounded-lg w-24 h-24 flex items-center justify-center flex-col"
                   >
@@ -87,7 +88,7 @@ const AllPatients = () => {
                     <p className="text-center text-sm font-semibold bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center">
                       {patient.queueNumber}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
