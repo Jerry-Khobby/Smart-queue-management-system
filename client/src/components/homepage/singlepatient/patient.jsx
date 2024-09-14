@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { getItem } from '../../../localStorageUtils'; // Assuming you have this utility
+import { usePatientContext } from '../../../context/PatientContext';
 
 const SinglePatient = () => {
   const { insuranceNumber } = useParams(); // Get insuranceNumber from the URL
@@ -9,6 +10,7 @@ const SinglePatient = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { setPatientData } = usePatientContext();
 
 
 
@@ -46,97 +48,90 @@ const SinglePatient = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const handleFieldClick = (field) => {
-    navigate(`/edit-patient/${insuranceNumber}/${field}`); // Navigate to the edit page for a specific field
-  };
 
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center">
-      {patient ? (
-        <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-xl">
-          <h1 className="text-2xl font-bold mb-4">Patient Details</h1>
-          <div className="flex flex-col gap-4">
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('name')}
-            >
-              <strong>Name:</strong> {patient.name}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('insuranceNumber')}
-            >
-              <strong>Insurance Number:</strong> {patient.insuranceNumber}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('age')}
-            >
-              <strong>Age:</strong> {patient.age}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('gender')}
-            >
-              <strong>Gender:</strong> {patient.gender}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('phone')}
-            >
-              <strong>Phone:</strong> {patient.phone}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('address')}
-            >
-              <strong>Address:</strong> {patient.address}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('symptoms')}
-            >
-              <strong>Symptoms:</strong> {patient.symptoms}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('diseaseDescription')}
-            >
-              <strong>Disease description:</strong> {patient.diseaseDescription}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('diseaseStartDate')}
-            >
-              <strong>Disease start date:</strong> {new Date(patient.diseaseStartDate).toLocaleDateString()}
-            </div>
-            
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('queueNumber')}
-            >
-              <strong>Queue Number:</strong> {patient.queueNumber}
-            </div>
-            <div
-              className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
-              onClick={() => handleFieldClick('recordingDate')}
-            >
-              <strong>Recording Date:</strong> {new Date(patient.recordingDate).toLocaleDateString()}
-            </div>
-
-            {/* Full Update Button */}
-            <button
-              className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md"
-              onClick={() => navigate(`/update-patient/${insuranceNumber}`)} // Navigate to full update page
-            >
-              Update Patient Record
-            </button>
-          </div>
+<div className="min-h-screen pt-20 flex justify-center items-center px-4">
+  {patient ? (
+    <div className="bg-white shadow-lg rounded-lg p-6 w-full sm:max-w-3xl lg:max-w-4xl">
+      <h1 className="text-2xl font-bold mb-4">Patient Details</h1>
+      <div className="flex flex-col gap-4">
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Name:</strong> {patient.name}
         </div>
-      ) : (
-        <div>No patient data available.</div>
-      )}
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Insurance Number:</strong> {patient.insuranceNumber}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Age:</strong> {patient.age}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+   
+        >
+          <strong>Gender:</strong> {patient.gender}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+  
+        >
+          <strong>Phone:</strong> {patient.phone}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Address:</strong> {patient.address}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Symptoms:</strong> {patient.symptoms}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Disease description:</strong> {patient.diseaseDescription}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Disease start date:</strong> {new Date(patient.diseaseStartDate).toLocaleDateString()}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Queue Number:</strong> {patient.queueNumber}
+        </div>
+        <div
+          className="p-4 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md"
+        >
+          <strong>Recording Date:</strong> {new Date(patient.recordingDate).toLocaleDateString()}
+        </div>
+
+        {/* Full Update Button */}
+        // Full Update Button
+<button
+  className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md"
+  onClick={() => {
+    setPatientData(patient); // Store patient data in context
+    navigate(`/update-patient/${patient.insuranceNumber}`); // Navigate to the update page
+  }}
+>
+  Update Patient Record
+</button>
+
+      </div>
     </div>
+  ) : (
+    <div>No patient data available.</div>
+  )}
+</div>
+
   );
 };
 
