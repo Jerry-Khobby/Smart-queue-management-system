@@ -236,6 +236,7 @@ const updatePatients = async (req, res) => {
       return res.status(403).json({ message: 'You can only update records for today.' });
     }
     
+    
       // Remove insuranceNumber from updates if it exists
       if (updates.insuranceNumber) {
         delete updates.insuranceNumber;

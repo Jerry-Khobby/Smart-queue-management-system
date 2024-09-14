@@ -9,7 +9,6 @@ const UpdatePatientForms = () => {
   const { patientData, setPatientData } = usePatientContext();
   const [formData, setFormData] = useState({
     name: '',
-    insuranceNumber: '',
     age: '',
     gender: '',
     phone: '',
@@ -19,6 +18,8 @@ const UpdatePatientForms = () => {
     diseaseStartDate: '',
     queueNumber: '',
   });
+  const [responseMessage, setResponseMessage] = useState(null);
+  const [responseType, setResponseType] = useState('success');
 
   useEffect(() => {
     const token = getItem("token");
@@ -63,21 +64,43 @@ const UpdatePatientForms = () => {
         }
       );
 
-      if (response.status === 200) {
+      if (response?.status === 200) {
         // Update the context state with the new patient data
+        const message = response?.data?.message ?? 'Patient details added successfully!';
+        setResponseMessage(message);
+        setResponseType('success');
         setPatientData(response.data.patient);
-        navigate('/updated-patient-details');
+        navigate(`/patient/${response.data.patient.insuranceNumber}`);
+
+        startMessageTimer();
       }
     } catch (error) {
-      console.error('Error updating patient:', error);
+      console.error('Error response:', error?.response);
+      const errorMessage = error?.response?.data?.error ?? 'There was an error submitting the form.';
+      setResponseMessage(errorMessage);
+      setResponseType('error');
       // Handle error (e.g., show an error message)
+
+      startMessageTimer();
     }
+  };
+
+  const startMessageTimer = () => {
+    setTimeout(() => {
+      setResponseMessage('');
+      setResponseType('');
+    }, 7000); // 7000 milliseconds = 7 seconds
   };
 
   return (
     <div className="min-h-screen pt-20 flex justify-center items-center px-4">
       <div className="bg-white shadow-lg rounded-lg p-6 w-full sm:max-w-3xl lg:max-w-4xl">
         <h1 className="text-2xl font-bold mb-4">Update Patient Details</h1>
+        {responseMessage && (
+          <div className={`p-4 mb-4 text-sm rounded ${responseType === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {responseMessage}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="name" className="block mb-2 font-medium">Name</label>
@@ -88,19 +111,6 @@ const UpdatePatientForms = () => {
               value={formData.name}
               onChange={handleChange}
               className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="insuranceNumber" className="block mb-2 font-medium">Insurance Number</label>
-            <input
-              type="text"
-              id="insuranceNumber"
-              name="insuranceNumber"
-              value={formData.insuranceNumber}
-              onChange={handleChange}
-              className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full"
-              disabled
             />
           </div>
 

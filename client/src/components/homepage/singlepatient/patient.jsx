@@ -112,9 +112,6 @@ const SinglePatient = () => {
         >
           <strong>Recording Date:</strong> {new Date(patient.recordingDate).toLocaleDateString()}
         </div>
-
-        {/* Full Update Button */}
-        // Full Update Button
 <button
   className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md"
   onClick={() => {
