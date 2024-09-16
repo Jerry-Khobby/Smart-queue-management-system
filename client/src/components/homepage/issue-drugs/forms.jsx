@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useParams } from 'react-router-dom';
 import axios from 'axios';
 import { BsPlusLg } from 'react-icons/bs'; // Import the plus icon
 import { getItem } from '../../../localStorageUtils';
 
 const IssueDrugsForms = () => {
+  let {insuranceNumber} = useParams();
   const navigate = useNavigate();
-  const [forms, setForms] = useState([{ medicineName: '', dosage: '', frequency: '' }]);
+  const [forms, setForms] = useState([{ drugName: '', dosage: '', frequency: '' }]);
   const [formStatuses, setFormStatuses] = useState([false]); // Track completion status of each form
   const [responseMessage, setResponseMessage] = useState(null);
   const [responseType, setResponseType] = useState('success');
+  const [loading,setLoading]= useState(false);
 
   const handleChange = (index, e) => {
     const { name, value } = e.target;
@@ -18,42 +20,55 @@ const IssueDrugsForms = () => {
     setForms(updatedForms);
 
     // Check if the current form is filled
-    const isFormFilled = updatedForms[index].medicineName && updatedForms[index].dosage && updatedForms[index].frequency;
+    const isFormFilled = updatedForms[index].drugName && updatedForms[index].dosage && updatedForms[index].frequency;
     const updatedFormStatuses = [...formStatuses];
     updatedFormStatuses[index] = isFormFilled;
     setFormStatuses(updatedFormStatuses);
   };
 
-  const handleSubmit = async (e, index) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading state
     const token = getItem('token');
-
+  
+    // Check if any form is incomplete
+    for (const form of forms) {
+      if (!form.drugName || !form.dosage || !form.frequency) {
+        setResponseMessage("Please fill out all fields for each medication.");
+        setResponseType("error");
+        startMessageTimer();
+        setLoading(false); // Stop loading if there's an error
+        return;
+      }
+    }
+  
     try {
       const response = await axios.post(
-        'http://localhost:8000/issue-drug',
-        forms[index],
+        `http://localhost:8000/patient-prescribe/${insuranceNumber}`,
+        { medications: forms }, // Send the forms as an array of medications
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
-      if (response?.status === 200) {
+  
+      if (response?.status === 200 || response?.status === 201) {
         const message = response?.data?.message ?? 'Drug issued successfully!';
         setResponseMessage(message);
         setResponseType('success');
-
         startMessageTimer();
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message ?? 'There was an error submitting the form.';
       setResponseMessage(errorMessage);
       setResponseType('error');
-
-      startMessageTimer();
+    } finally {
+      setLoading(false); // Stop loading when the request is done
     }
   };
+  
+  
 
   const startMessageTimer = () => {
     setTimeout(() => {
@@ -65,7 +80,7 @@ const IssueDrugsForms = () => {
   const handleAddForm = () => {
     // Add a new form if the last form is filled
     if (formStatuses[formStatuses.length - 1]) {
-      setForms([...forms, { medicineName: '', dosage: '', frequency: '' }]);
+      setForms([...forms, { drugName: '', dosage: '', frequency: '' }]);
       setFormStatuses([...formStatuses, false]); // New form starts as not filled
     }
   };
@@ -84,6 +99,16 @@ const IssueDrugsForms = () => {
     }
   };
 
+
+
+  if(loading){
+    return (
+      <div className='flex justify-center items-center min-h-screen'>
+        <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-20 w-20"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-20 flex justify-center items-center px-4">
       <div className="bg-white shadow-md rounded-3xl p-6 w-full sm:max-w-3xl lg:max-w-4xl">
@@ -96,12 +121,12 @@ const IssueDrugsForms = () => {
         {forms.map((form, index) => (
           <form key={index} onSubmit={(e) => handleSubmit(e, index)} className="flex flex-col gap-4 mb-4">
             <div>
-              <label htmlFor={`medicineName-${index}`} className="block mb-2 font-medium font-mono">Medicine Name</label>
+              <label htmlFor={`drugName-${index}`} className="block mb-2 font-medium font-mono">Medicine Name</label>
               <input
                 type="text"
-                id={`medicineName-${index}`}
-                name="medicineName"
-                value={form.medicineName}
+                id={`drugName-${index}`}
+                name="drugName"
+                value={form.drugName}
                 onChange={(e) => handleChange(index, e)}
                 className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full h-5"
                 required 
@@ -145,7 +170,7 @@ const IssueDrugsForms = () => {
                 <button
                   type="button"
                   onClick={() => handleRemoveForm(index)}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md w-full ml-2 h-8 font-mono  md:w-1/2 lg:w-1/2 sm:w-full"
+                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md w-full ml-2 h-8 font-mono  md:w-1/2 lg:w-1/2 sm:w-full text-center flex  items-center justify-center"
                 >
                   Remove
                 </button>

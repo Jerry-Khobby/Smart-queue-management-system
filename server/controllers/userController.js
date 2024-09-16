@@ -285,38 +285,53 @@ const getSinglePatient = async (req, res) => {
 const prescribeMedication = async (req, res) => {
   const { insuranceNumber } = req.params;
   const medications = req.body.medications;
+
   if (!insuranceNumber || isNaN(insuranceNumber)) {
-    console.log("Insurance number cannot be found")
     return res.status(400).json({ message: 'Invalid or missing insurance number' });
   }
-  try{
-    const patient = await Patient.findOne({insuranceNumber});
-    if(!patient){
-      return res.status(404).json({message:"Patient not found"});
-    }
-    const medicationRecords=[];
 
-    for (const med of medications){
-      const {drugName,dosage,frequency}=med;
+  if (!Array.isArray(medications) || medications.length === 0) {
+    return res.status(400).json({ message: 'No medications provided' });
+  }
+
+  try {
+    const patient = await Patient.findOne({ insuranceNumber });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const medicationRecords = [];
+
+    for (const med of medications) {
+      const { drugName, dosage, frequency } = med;
+
+      // Validate fields
+      if (!drugName || !dosage || !frequency) {
+        return res.status(400).json({ message: 'All medication fields (drugName, dosage, frequency) are required' });
+      }
+
       const medication = new Medication({
         drugName,
         dosage,
         frequency,
-        prescribedBy:req.userId,
-        patient:patient._id,
+        prescribedBy: req.userId,
+        patient: patient._id,
       });
-      await medication.save();
 
+      await medication.save();
       medicationRecords.push(medication._id);
     }
+
     patient.medications.push(...medicationRecords);
     await patient.save();
+
     res.status(201).json({ message: "Medications prescribed successfully", medications: medicationRecords });
-  }catch(error){
+  } catch (error) {
     console.error(error);
     res.status(500).json({ error: "There was an error prescribing the medications" });
   }
 };
+
 
 
 
