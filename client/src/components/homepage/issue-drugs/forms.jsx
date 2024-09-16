@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate,useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { BsPlusLg } from 'react-icons/bs'; // Import the plus icon
 import { getItem } from '../../../localStorageUtils';
 
 const IssueDrugsForms = () => {
-  let {insuranceNumber} = useParams();
+  let { insuranceNumber } = useParams();
   const navigate = useNavigate();
   const [forms, setForms] = useState([{ drugName: '', dosage: '', frequency: '' }]);
   const [formStatuses, setFormStatuses] = useState([false]); // Track completion status of each form
   const [responseMessage, setResponseMessage] = useState(null);
   const [responseType, setResponseType] = useState('success');
-  const [loading,setLoading]= useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (index, e) => {
     const { name, value } = e.target;
@@ -41,7 +41,7 @@ const IssueDrugsForms = () => {
         return;
       }
     }
-  
+
     try {
       const response = await axios.post(
         `http://localhost:8000/patient-prescribe/${insuranceNumber}`,
@@ -52,12 +52,16 @@ const IssueDrugsForms = () => {
           },
         }
       );
-  
+
       if (response?.status === 200 || response?.status === 201) {
         const message = response?.data?.message ?? 'Drug issued successfully!';
         setResponseMessage(message);
         setResponseType('success');
         startMessageTimer();
+
+        // Reset the forms after successful submission
+        setForms([{ drugName: '', dosage: '', frequency: '' }]);
+        setFormStatuses([false]);
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message ?? 'There was an error submitting the form.';
@@ -67,8 +71,6 @@ const IssueDrugsForms = () => {
       setLoading(false); // Stop loading when the request is done
     }
   };
-  
-  
 
   const startMessageTimer = () => {
     setTimeout(() => {
@@ -99,11 +101,9 @@ const IssueDrugsForms = () => {
     }
   };
 
-
-
-  if(loading){
+  if (loading) {
     return (
-      <div className='flex justify-center items-center min-h-screen'>
+      <div className="flex justify-center items-center min-h-screen">
         <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-20 w-20"></div>
       </div>
     );
@@ -118,8 +118,9 @@ const IssueDrugsForms = () => {
             {responseMessage}
           </div>
         )}
+
         {forms.map((form, index) => (
-          <form key={index} onSubmit={(e) => handleSubmit(e, index)} className="flex flex-col gap-4 mb-4">
+          <div key={index} className="flex flex-col gap-4 mb-4">
             <div>
               <label htmlFor={`drugName-${index}`} className="block mb-2 font-medium font-mono">Medicine Name</label>
               <input
@@ -129,7 +130,7 @@ const IssueDrugsForms = () => {
                 value={form.drugName}
                 onChange={(e) => handleChange(index, e)}
                 className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full h-5"
-                required 
+                required
               />
             </div>
 
@@ -142,7 +143,7 @@ const IssueDrugsForms = () => {
                 value={form.dosage}
                 onChange={(e) => handleChange(index, e)}
                 className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full h-5"
-                required 
+                required
               />
             </div>
 
@@ -159,34 +160,35 @@ const IssueDrugsForms = () => {
               />
             </div>
 
-            <div className="flex justify-center items-center">
+            {forms.length > 1 && (
               <button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md md:w-1/2 lg:w-1/2 sm:w-full mr-2 h-8 flex items-center justify-center text-center  font-mono"
+                type="button"
+                onClick={() => handleRemoveForm(index)}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md w-full mt-2 font-mono"
               >
-                Issue Drug
+                Remove
               </button>
-              {forms.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveForm(index)}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md w-full ml-2 h-8 font-mono  md:w-1/2 lg:w-1/2 sm:w-full text-center flex  items-center justify-center"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          </form>
+            )}
+          </div>
         ))}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md md:w-1/2 lg:w-1/2 sm:w-full mt-4 h-8 flex items-center justify-center text-center font-mono"
+          >
+            Issue Drug
+          </button>
+        </form>
 
         {formStatuses[formStatuses.length - 1] && (
           <div className="flex items-center justify-center mt-3">
             <div
-            className='border-3 w-7 h-7 flex items-center justify-center rounded-full cursor-pointer bg-slate-900'
+              className="border-3 w-7 h-7 flex items-center justify-center rounded-full cursor-pointer bg-slate-900"
               onClick={handleAddForm}
               style={{ width: '50px', height: '50px' }} // Make it a circle
             >
-              <BsPlusLg size={30}  color='white'/>
+              <BsPlusLg size={30} color="white" />
             </div>
           </div>
         )}

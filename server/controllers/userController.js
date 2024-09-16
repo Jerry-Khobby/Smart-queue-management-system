@@ -290,6 +290,11 @@ const prescribeMedication = async (req, res) => {
     return res.status(400).json({ message: 'Invalid or missing insurance number' });
   }
 
+  // check if the user role is a doctor 
+  if(!req.user || req.user.role !=='doctor'){
+    return res.status(403).json({ message: 'You are not authorized. Only doctors can prescribe medications.' });
+  }
+
   if (!Array.isArray(medications) || medications.length === 0) {
     return res.status(400).json({ message: 'No medications provided' });
   }
