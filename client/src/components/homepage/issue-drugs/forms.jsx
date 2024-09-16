@@ -1,0 +1,173 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { BsPlusLg } from 'react-icons/bs'; // Import the plus icon
+import { getItem } from '../../../localStorageUtils';
+
+const IssueDrugsForms = () => {
+  const navigate = useNavigate();
+  const [forms, setForms] = useState([{ medicineName: '', dosage: '', frequency: '' }]);
+  const [formStatuses, setFormStatuses] = useState([false]); // Track completion status of each form
+  const [responseMessage, setResponseMessage] = useState(null);
+  const [responseType, setResponseType] = useState('success');
+
+  const handleChange = (index, e) => {
+    const { name, value } = e.target;
+    const updatedForms = [...forms];
+    updatedForms[index] = { ...updatedForms[index], [name]: value };
+    setForms(updatedForms);
+
+    // Check if the current form is filled
+    const isFormFilled = updatedForms[index].medicineName && updatedForms[index].dosage && updatedForms[index].frequency;
+    const updatedFormStatuses = [...formStatuses];
+    updatedFormStatuses[index] = isFormFilled;
+    setFormStatuses(updatedFormStatuses);
+  };
+
+  const handleSubmit = async (e, index) => {
+    e.preventDefault();
+    const token = getItem('token');
+
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/issue-drug',
+        forms[index],
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.status === 200) {
+        const message = response?.data?.message ?? 'Drug issued successfully!';
+        setResponseMessage(message);
+        setResponseType('success');
+
+        startMessageTimer();
+      }
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message ?? 'There was an error submitting the form.';
+      setResponseMessage(errorMessage);
+      setResponseType('error');
+
+      startMessageTimer();
+    }
+  };
+
+  const startMessageTimer = () => {
+    setTimeout(() => {
+      setResponseMessage('');
+      setResponseType('');
+    }, 7000);
+  };
+
+  const handleAddForm = () => {
+    // Add a new form if the last form is filled
+    if (formStatuses[formStatuses.length - 1]) {
+      setForms([...forms, { medicineName: '', dosage: '', frequency: '' }]);
+      setFormStatuses([...formStatuses, false]); // New form starts as not filled
+    }
+  };
+
+  const handleRemoveForm = (index) => {
+    // Only allow removal if there is more than one form
+    if (forms.length > 1) {
+      const updatedForms = forms.filter((_, i) => i !== index);
+      const updatedFormStatuses = formStatuses.filter((_, i) => i !== index);
+      setForms(updatedForms);
+      setFormStatuses(updatedFormStatuses);
+    } else {
+      setResponseMessage('Cannot delete the last remaining drug!');
+      setResponseType('error');
+      startMessageTimer();
+    }
+  };
+
+  return (
+    <div className="min-h-screen pt-20 flex justify-center items-center px-4">
+      <div className="bg-white shadow-md rounded-3xl p-6 w-full sm:max-w-3xl lg:max-w-4xl">
+        <h1 className="text-2xl font-bold mb-4 font-mono">Issue Drugs</h1>
+        {responseMessage && (
+          <div className={`p-4 mb-4 text-sm rounded ${responseType === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {responseMessage}
+          </div>
+        )}
+        {forms.map((form, index) => (
+          <form key={index} onSubmit={(e) => handleSubmit(e, index)} className="flex flex-col gap-4 mb-4">
+            <div>
+              <label htmlFor={`medicineName-${index}`} className="block mb-2 font-medium font-mono">Medicine Name</label>
+              <input
+                type="text"
+                id={`medicineName-${index}`}
+                name="medicineName"
+                value={form.medicineName}
+                onChange={(e) => handleChange(index, e)}
+                className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full h-5"
+                required 
+              />
+            </div>
+
+            <div>
+              <label htmlFor={`dosage-${index}`} className="block mb-2 font-medium font-mono">Dosage</label>
+              <input
+                type="text"
+                id={`dosage-${index}`}
+                name="dosage"
+                value={form.dosage}
+                onChange={(e) => handleChange(index, e)}
+                className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full h-5"
+                required 
+              />
+            </div>
+
+            <div>
+              <label htmlFor={`frequency-${index}`} className="block mb-2 font-medium font-mono">Frequency</label>
+              <input
+                type="text"
+                id={`frequency-${index}`}
+                name="frequency"
+                value={form.frequency}
+                onChange={(e) => handleChange(index, e)}
+                className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full h-5"
+                required
+              />
+            </div>
+
+            <div className="flex justify-center items-center">
+              <button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md md:w-1/2 lg:w-1/2 sm:w-full mr-2 h-8 flex items-center justify-center text-center  font-mono"
+              >
+                Issue Drug
+              </button>
+              {forms.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveForm(index)}
+                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md w-full ml-2 h-8 font-mono  md:w-1/2 lg:w-1/2 sm:w-full"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </form>
+        ))}
+
+        {formStatuses[formStatuses.length - 1] && (
+          <div className="flex items-center justify-center mt-3">
+            <div
+            className='border-3 w-7 h-7 flex items-center justify-center rounded-full cursor-pointer bg-slate-900'
+              onClick={handleAddForm}
+              style={{ width: '50px', height: '50px' }} // Make it a circle
+            >
+              <BsPlusLg size={30}  color='white'/>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default IssueDrugsForms;

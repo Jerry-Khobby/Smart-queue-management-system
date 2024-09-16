@@ -104,7 +104,7 @@ const SinglePatient = () => {
                 className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-sm border-1 border-green-700 shadow-md hover:shadow-lg transition-shadow duration-200 font-mono"
                 onClick={() => {
                   setPatientData(patient); // Store patient data in context
-                  navigate(`/issue-drug/${patient.insuranceNumber}`); // Navigate to the issue drug page
+                  navigate(`/patient-prescribe/${patient.insuranceNumber}`); // Navigate to the issue drug page
                 }}
               >
                 Issue Drug

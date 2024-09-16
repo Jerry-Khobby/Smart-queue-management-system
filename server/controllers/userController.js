@@ -216,6 +216,7 @@ return res.status(404).json({error:'There was an error'});
 }
 
 // edit the data for a particular for that day 
+// any time you use the useParams, you have to check for it availability and all that 
 const updatePatients = async (req, res) => {
   const { insuranceNumber } = req.params;
 
@@ -283,35 +284,37 @@ const getSinglePatient = async (req, res) => {
 // Now when the doctor receives this, the doctor will prescribe the drugs for the patient 
 const prescribeMedication = async (req, res) => {
   const { insuranceNumber } = req.params;
-  const { drugName, dosage, frequency } = req.body;
-
-  try {
-    // Find the patient by insuranceNumber
-    const patient = await Patient.findOne({ insuranceNumber });
-    if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+  const medications = req.body.medications;
+  if (!insuranceNumber || isNaN(insuranceNumber)) {
+    console.log("Insurance number cannot be found")
+    return res.status(400).json({ message: 'Invalid or missing insurance number' });
+  }
+  try{
+    const patient = await Patient.findOne({insuranceNumber});
+    if(!patient){
+      return res.status(404).json({message:"Patient not found"});
     }
+    const medicationRecords=[];
 
-    // Create a new Medication record
-    const medication = new Medication({
-      drugName,
-      dosage,
-      frequency,
-      prescribedBy: req.userId, // Assuming the doctor's ID is stored in req.userId
-      patient: patient._id,
-    });
+    for (const med of medications){
+      const {drugName,dosage,frequency}=med;
+      const medication = new Medication({
+        drugName,
+        dosage,
+        frequency,
+        prescribedBy:req.userId,
+        patient:patient._id,
+      });
+      await medication.save();
 
-    // Save the medication
-    await medication.save();
-
-    // Optionally, add this medication to the patient's record
-    patient.medications.push(medication._id);
+      medicationRecords.push(medication._id);
+    }
+    patient.medications.push(...medicationRecords);
     await patient.save();
-
-    res.status(201).json({ message: "Medication prescribed successfully", medication });
-  } catch (error) {
+    res.status(201).json({ message: "Medications prescribed successfully", medications: medicationRecords });
+  }catch(error){
     console.error(error);
-    res.status(500).json({ error: "There was an error prescribing the medication" });
+    res.status(500).json({ error: "There was an error prescribing the medications" });
   }
 };
 

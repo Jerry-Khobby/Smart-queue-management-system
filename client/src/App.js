@@ -7,6 +7,7 @@ import QueuePage from "./components/homepage";
 import MainNewPatientForm from './components/homepage/newpatient/main';
 import SinglePatientMainComponent from './components/homepage/singlepatient/main';
 import MainUpdate from './components/update-patient/main';
+import IssueDrugs from './components/homepage/issue-drugs/main';
 
 
 
@@ -26,6 +27,7 @@ function App() {
       <Route path="/newpatient" element ={<MainNewPatientForm />}/>
       <Route path="/patient/:insuranceNumber" element={<SinglePatientMainComponent/>}/>
       <Route path="/update-patient/:insuranceNumber" element={<MainUpdate/>}/>
+      <Route path="/patient-prescribe/:insuranceNumber" element={<IssueDrugs/>}/>
     </Routes>
     </BrowserRouter>
   );
