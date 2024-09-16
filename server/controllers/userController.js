@@ -129,7 +129,7 @@ const sendPatientsDetails = async (req, res) => {
       symptoms, 
       diseaseDescription, 
       queueNumber, 
-      diseaseStartDate 
+      diseaseStartDate,
     } = req.body;
 
     // Parse fields that should be integers
@@ -218,43 +218,47 @@ return res.status(404).json({error:'There was an error'});
 // edit the data for a particular for that day 
 const updatePatients = async (req, res) => {
   const { insuranceNumber } = req.params;
-  const updates = req.body; // The fields you want to update
+
+  if (!insuranceNumber || isNaN(insuranceNumber)) {
+    console.log("Insurance number cannot be found")
+    return res.status(400).json({ message: 'Invalid or missing insurance number' });
+  }
+  const updates = req.body;
   
   try {
-    // Fetch the patient record by insuranceNumber
     const patient = await Patient.findOne({ insuranceNumber });
     
     if (!patient) {
       return res.status(404).json({ message: 'Patient not found' });
     }
     
-    // Check if the recordingDate is today
-    const today = new Date().setHours(0, 0, 0, 0); // Start of today
-    const recordingDate = new Date(patient.recordingDate).setHours(0, 0, 0, 0); // Start of the recording date
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
+    const recordingDate = new Date(patient.recordingDate).toISOString().split('T')[0]; // Get recording date in 'YYYY-MM-DD' format
     
     if (today !== recordingDate) {
+      console.log(`Today: ${today}, Recording Date: ${recordingDate}`);
       return res.status(403).json({ message: 'You can only update records for today.' });
     }
     
-    
-      // Remove insuranceNumber from updates if it exists
-      if (updates.insuranceNumber) {
-        delete updates.insuranceNumber;
-        return res.status(405).json({error:'Health Insurance Number cannot be updated'});
-      }
-    // If the recordingDate is today, update the patient record
+
+
+    if (updates.insuranceNumber) {
+      return res.status(405).json({ message: 'Health Insurance Number cannot be updated' });
+    }
+
     Object.keys(updates).forEach(key => {
       patient[key] = updates[key];
     });
-    
+
     await patient.save();
     
     res.status(200).json({ message: 'Patient record updated successfully', patient });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'There was an error updating the patient record' });
+    res.status(500).json({ message: 'There was an error updating the patient record' });
   }
 };
+
 
 
 const getSinglePatient = async (req, res) => {

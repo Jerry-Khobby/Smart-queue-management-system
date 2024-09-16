@@ -16,7 +16,6 @@ const UpdatePatientForms = () => {
     symptoms: '',
     diseaseDescription: '',
     diseaseStartDate: '',
-    queueNumber: '',
   });
   const [responseMessage, setResponseMessage] = useState(null);
   const [responseType, setResponseType] = useState('success');
@@ -31,7 +30,6 @@ const UpdatePatientForms = () => {
     if (patientData) {
       setFormData({
         name: patientData.name || '',
-        insuranceNumber: patientData.insuranceNumber || '',
         age: patientData.age || '',
         gender: patientData.gender || '',
         phone: patientData.phone || '',
@@ -39,7 +37,6 @@ const UpdatePatientForms = () => {
         symptoms: patientData.symptoms || '',
         diseaseDescription: patientData.diseaseDescription || '',
         diseaseStartDate: patientData.diseaseStartDate || '',
-        queueNumber: patientData.queueNumber || '',
       });
     }
   }, [navigate, patientData]);
@@ -52,45 +49,45 @@ const UpdatePatientForms = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = getItem("token");
-
+  
     try {
       const response = await axios.post(
-        `http://localhost:8000/update-patient/${formData.insuranceNumber}`,
+        `http://localhost:8000/update-patient/${patientData.insuranceNumber}`, // Use insuranceNumber from patientData
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Add the token to headers
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-
+  
       if (response?.status === 200) {
-        // Update the context state with the new patient data
-        const message = response?.data?.message ?? 'Patient details added successfully!';
+        const message = response?.data?.message ?? 'Patient details updated successfully!';
         setResponseMessage(message);
         setResponseType('success');
         setPatientData(response.data.patient);
         navigate(`/patient/${response.data.patient.insuranceNumber}`);
-
+  
         startMessageTimer();
       }
     } catch (error) {
-      console.error('Error response:', error?.response);
-      const errorMessage = error?.response?.data?.error ?? 'There was an error submitting the form.';
+      const errorMessage = error?.response?.data?.message ?? 'There was an error submitting the form.';
       setResponseMessage(errorMessage);
       setResponseType('error');
-      // Handle error (e.g., show an error message)
-
+  
       startMessageTimer();
     }
   };
+  
+  
 
   const startMessageTimer = () => {
     setTimeout(() => {
       setResponseMessage('');
       setResponseType('');
-    }, 7000); // 7000 milliseconds = 7 seconds
+    }, 7000); // The message disappears after 7 seconds
   };
+  
 
   return (
     <div className="min-h-screen pt-20 flex justify-center items-center px-4">
@@ -193,18 +190,6 @@ const UpdatePatientForms = () => {
               id="diseaseStartDate"
               name="diseaseStartDate"
               value={formData.diseaseStartDate}
-              onChange={handleChange}
-              className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="queueNumber" className="block mb-2 font-medium">Queue Number</label>
-            <input
-              type="text"
-              id="queueNumber"
-              name="queueNumber"
-              value={formData.queueNumber}
               onChange={handleChange}
               className="p-4 bg-gray-100 hover:bg-gray-200 rounded-md w-full"
             />
