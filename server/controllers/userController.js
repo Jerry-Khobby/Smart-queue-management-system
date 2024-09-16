@@ -313,6 +313,9 @@ const prescribeMedication = async (req, res) => {
 
 
 
+
+
+// the pharmacist portion of things 
 const donePrescription = async (req, res) => {
   const { insuranceNumber } = req.params;
   const { status, dispensedDate } = req.body;
