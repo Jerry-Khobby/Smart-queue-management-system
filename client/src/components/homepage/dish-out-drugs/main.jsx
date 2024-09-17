@@ -8,7 +8,6 @@ const PharmacistForm = () => {
     <div>
       <Navbar/>
       <PharmacistPrescriptionForm/>
-
     </div>
    );
 }

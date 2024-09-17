@@ -281,6 +281,8 @@ const getSinglePatient = async (req, res) => {
   }
 };
 
+
+
 // Now when the doctor receives this, the doctor will prescribe the drugs for the patient 
 const prescribeMedication = async (req, res) => {
   const { insuranceNumber } = req.params;
@@ -339,6 +341,48 @@ const prescribeMedication = async (req, res) => {
 
 
 
+// I have to create a get route for this , 
+const getDrugsPrescribed = async (req, res) => {
+  const { insuranceNumber } = req.params;
+  
+  // Check if the insuranceNumber is valid
+  if (!insuranceNumber || isNaN(insuranceNumber)) {
+    return res.status(400).json({ message: 'Invalid or missing insurance number' });
+  }
+
+  // Get today's date in YYYY-MM-DD format to match against the prescription date
+  const today = new Date().toISOString().split('T')[0];
+
+  try {
+    // Find the patient by insurance number
+    const patient = await Patient.findOne({ insuranceNumber });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    // Query the Medication model to find drugs prescribed on the same day (using the 'createdAt' date)
+    const prescribedDrugs = await Medication.find({
+      patient: patient._id,
+      status: "Prescribed",
+      prescibedDate:today,
+    });
+
+    // If no drugs were prescribed today, return an appropriate response
+    if (!prescribedDrugs.length) {
+      return res.status(404).json({ message: "No drugs prescribed to this patient today" });
+    }
+
+    // Return the list of prescribed drugs
+    return res.status(200).json({ message: "Drugs prescribed today", prescribedDrugs });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error while retrieving prescribed drugs" });
+  }
+};
+
+
+
 
 
 
@@ -347,13 +391,22 @@ const donePrescription = async (req, res) => {
   const { insuranceNumber } = req.params;
   const { status, dispensedDate } = req.body;
 
+  if (!insuranceNumber || isNaN(insuranceNumber)) {
+    return res.status(400).json({ message: 'Invalid or missing insurance number' });
+  }
+
+
+    // check if the user role is a pharmacist  
+  if(!req.user || req.user.role !=='pharmacist'){
+      return res.status(403).json({ message: 'You are not authorized. Only pharmacist can prescribe medications.' });
+    }
+
   try {
     // Find the patient by insuranceNumber
     const patient = await Patient.findOne({ insuranceNumber });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
-
     // Find the medication record for the patient that needs to be updated
     const medication = await Medication.findOne({ patient: patient._id, status: "Prescribed" });
     if (!medication) {
@@ -426,6 +479,7 @@ module.exports={
   getSinglePatient:[verifyToken,getSinglePatient],
   updatePatients:[verifyToken,updatePatients],
   prescribeMedication:[verifyToken,prescribeMedication],
+  getDrugsPrescribed:[verifyToken,getDrugsPrescribed],
   donePrescription:[verifyToken,donePrescription],
   logout:[verifyToken,logout]
 

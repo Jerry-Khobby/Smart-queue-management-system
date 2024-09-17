@@ -19,6 +19,12 @@ const MedicationSchema = new Schema({
     ref: "User", // Reference to the doctor who prescribed the medication
     required: true,
   },
+  prescibedDate:{
+type:Date,
+default:Date.now(),
+required:true,
+
+  },
   patient: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Patient", // Reference to the patient
@@ -35,7 +41,7 @@ const MedicationSchema = new Schema({
     type: String,
     enum: ["Prescribed", "Dispensed", "Not Available"],
     default: "Prescribed",
-  }
+  },
 });
 
 module.exports = mongoose.model('Medication', MedicationSchema);

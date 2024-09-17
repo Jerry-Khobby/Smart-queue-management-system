@@ -11,6 +11,7 @@ router.get("/patients",controller.allPatients);
 router.get("/patient/:insuranceNumber",controller.getSinglePatient);
 router.post("/update-patient/:insuranceNumber",controller.updatePatients);
 router.post("/patient-prescribe/:insuranceNumber",controller.prescribeMedication);
+router.get("/patient-prescribe/:insuranceNumber",controller.getDrugsPrescribed);
 router.patch("/prescription/:insuranceNumber",controller.donePrescription);
 router.put("/logout",controller.logout);
 
