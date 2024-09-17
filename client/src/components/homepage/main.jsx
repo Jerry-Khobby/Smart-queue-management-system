@@ -28,7 +28,7 @@ const AllPatients = () => {
       } 
       setLoading(false);
     } catch (error) {
-      setError(error.response?.data?.message || "Error fetching data");
+      setError(error.response?.data?.message || "Network Problems, please try your internet connection");
       setLoading(false);
     }
   };
