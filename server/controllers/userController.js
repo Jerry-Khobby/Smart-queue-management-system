@@ -437,7 +437,6 @@ const donePrescription = async (req, res) => {
 const logout = async (req, res) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(' ')[1];
-
   if (!token) {
     return res.status(400).json({ message: "No token provided" });
   }

@@ -164,7 +164,7 @@ const IssueDrugsForms = () => {
               <button
                 type="button"
                 onClick={() => handleRemoveForm(index)}
-                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md w-full mt-2 font-mono"
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-sm border-1 border-red-500 shadow-md hover:shadow-lg transition-shado duration-200  w-full mt-2 font-mono"
               >
                 Remove
               </button>
@@ -175,7 +175,7 @@ const IssueDrugsForms = () => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md md:w-1/2 lg:w-1/2 sm:w-full mt-4 h-8 flex items-center justify-center text-center font-mono"
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-sm border-1 border-green-700 shadow-md hover:shadow-lg transition-shadow duration-200  md:w-1/2 lg:w-1/2 sm:w-full mt-4 h-8 flex items-center justify-center text-center font-mono"
           >
             Issue Drug
           </button>

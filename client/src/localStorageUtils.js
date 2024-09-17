@@ -24,3 +24,10 @@ export const getItem = (key) => {
   }
   return item.data; // Return valid token
 };
+
+
+
+// I have to remove the token from localStorage
+export const removeItem=(key)=>{
+  window.localStorage.removeItem(key);
+}

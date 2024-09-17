@@ -4,13 +4,17 @@ import { IoIosNotifications } from "react-icons/io";
 import { MdOutlineSick } from "react-icons/md";
 import { AiOutlineClose } from "react-icons/ai"; // Import close icon
 import { Box } from "@mui/material";
-import { FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { FaSignOutAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { getItem, removeItem } from '../../localStorageUtils';
+import axios from 'axios';  // Ensure axios is imported
+import { useNavigate } from 'react-router-dom';
 
 const UserIcon = () => {
   const [showMenu, setShowMenu] = useState(false);
   const userMenuRef = useRef(null);
   const drawerRef = useRef(null); // Ref for drawer
+  const navigate = useNavigate();
 
   // Function to toggle the menu
   const handleToggleMenu = () => {
@@ -39,6 +43,34 @@ const UserIcon = () => {
     };
   }, [showMenu]);
 
+  const token = getItem("token");
+
+  // Redirect to login if no token is present
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
+
+  // Create a function that logs out the user
+  const handleLogout = async () => {
+    try {
+      const response = await axios.put('http://localhost:8000/logout', {}, {
+        headers: {
+          'Authorization': `Bearer ${getItem('token')}`  // Include the token in the request
+        }
+      });
+
+      removeItem('token');  // Remove token from localStorage
+      alert(response.data.message);  // Show the logout message
+      navigate('/login');  // Redirect to login page
+
+    } catch (error) {
+      console.error("Logout failed:", error);
+      alert("Logout failed. Please try again.");
+    }
+  };
+
   return (
     <div style={{ display: "flex", justifyContent: "flex-end", gap: '2px' }}>
       {/* Notification Icon */}
@@ -60,6 +92,7 @@ const UserIcon = () => {
           <IoIosNotifications size={23} color='black' />
         </div>
       </div>
+
       <div
         ref={userMenuRef}
         style={{
@@ -77,6 +110,7 @@ const UserIcon = () => {
           <FaRegUserCircle size={23} color='black' />
         </Box>
       </div>
+
       {showMenu && (
         <div>
           <div
@@ -125,11 +159,10 @@ const UserIcon = () => {
               <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
                 Record New Patient Details
               </li>
-              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded'>
-              <FaSignOutAlt className='mr-3 text-black' />
+              <li className='flex items-center cursor-pointer hover:bg-gray-400 p-2 rounded' onClick={handleLogout}>
+                <FaSignOutAlt className='mr-3 text-black' />
                 Logout
               </li>
-
             </ul>
           </div>
         </div>
