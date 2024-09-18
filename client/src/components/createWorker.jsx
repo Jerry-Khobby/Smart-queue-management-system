@@ -51,14 +51,14 @@ const UserAdditionForm = () => {
     if (formData.password !== formData.password_two) {
       setResponseMessage('Passwords do not match');
       setResponseType('error');
-
+  
       // Clear the message after 5 seconds
       setTimeout(() => {
         setResponseMessage(null);
       }, 5000);
       return;
     }
-
+  
     try {
       const response = await axios.post("http://localhost:8000/create", {
         name: formData.name,
@@ -69,9 +69,9 @@ const UserAdditionForm = () => {
         department: formData.department,
         profileImage: formData.profileImage,
       });
-
-      if (response.status === 200) {
-        setResponseMessage('User added successfully!');
+  
+      if (response?.status === 200) {
+        setResponseMessage(response.data.message || 'User added successfully!');
         setResponseType('success');
         // Clear the form after successful submission
         setFormData({
@@ -88,17 +88,24 @@ const UserAdditionForm = () => {
         setItem("token", response.data.token); // Use the imported setItem function
         navigate("/", { replace: true });
       } else {
-        setResponseMessage(response.error || 'Failed to add user');
+        setResponseMessage(response?.data?.error || 'Failed to add user');
         setResponseType('error');
       }
-
-    } catch (e) {
+  
+    } catch (error) {
       setToken(null);
       localStorage.removeItem("token");
-      setResponseMessage('There was an error in submitting the form.');
+      const errorMessage = error.response?.data?.error || 'There was an error in submitting the form.';
+      setResponseMessage(errorMessage);
       setResponseType('error');
     }
+  
+    // Clear the message after 5 seconds
+    setTimeout(() => {
+      setResponseMessage(null);
+    }, 5000);
   };
+  
 
   return (
     <div 

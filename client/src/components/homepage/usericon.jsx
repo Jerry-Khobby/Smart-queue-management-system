@@ -62,7 +62,7 @@ const UserIcon = () => {
       });
 
       removeItem('token');  // Remove token from localStorage
-      alert(response.data.message);  // Show the logout message
+      /* alert(response.data.message); */  // Show the logout message
       navigate('/login');  // Redirect to login page
 
     } catch (error) {

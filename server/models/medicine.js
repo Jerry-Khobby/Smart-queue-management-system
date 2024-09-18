@@ -42,6 +42,6 @@ required:true,
     enum: ["Prescribed", "Dispensed", "Not Available"],
     default: "Prescribed",
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model('Medication', MedicationSchema);

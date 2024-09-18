@@ -36,14 +36,16 @@ const verifyToken = async (req, res, next) => {
     }
 
     // Verify the token
-    jwt.verify(actualToken, secret, (err, decoded) => {
-      if (err) {
-        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
-      }
+    const decoded = jwt.verify(actualToken, secret); // Use await here
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized: User not found' });
+    }
 
-      req.userId = decoded.id; // Add user ID to request object
-      next();
-    });
+    req.user = user; // Attach the user object to request
+    req.userId = decoded.id; // Add user ID to request object
+    next();
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Token verification failed' });
@@ -54,40 +56,43 @@ const verifyToken = async (req, res, next) => {
 
 
 
-// controller for the creating user  
-const createUser= async(req,res)=>{
-  const {password,name,email,role,contactNumber,department,profileImage}=req.body;
-  if(!password||!name||!email ||!role ||!department||!contactNumber){
-    return res.status(400).json({error:'All fields are required'});
-  }
-  try{
-    const existingUser = await User.findOne({email});
-    if(existingUser){
-      console.log("User already exist");
-      return res.status(409).json({error:' User with this email already exist'})
-    }
-    const hashedPassword = await bcrypt.hash(password,10);
 
-    // move on to create the user
-    const newUser= new User({
-      name:name,
-      password:hashedPassword,
-      email:email,
-      role:role,
-      contactNumber:contactNumber,
-      department:department,
-      profileImage:profileImage,
+// controller for the creating user  
+// In your backend function
+const createUser = async (req, res) => {
+  const { password, name, email, role, contactNumber, department, profileImage } = req.body;
+  if (!password || !name || !email || !role || !department || !contactNumber) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ error: 'User with this email already exists' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create the user
+    const newUser = new User({
+      name: name,
+      password: hashedPassword,
+      email: email,
+      role: role,
+      contactNumber: contactNumber,
+      department: department,
+      profileImage: profileImage,
     });
     await newUser.save();
-    //generate a jwt 
-    const token=jwt.sign({id:newUser._id},secret,{expiresIn:'1d'});
-    res.status(200).json({message:'Signup successfully',token:token});
 
-  }catch(err){
+    // Generate a JWT
+    const token = jwt.sign({ id: newUser._id }, secret, { expiresIn: '1d' });
+    res.status(200).json({ message: 'Signup successful', token: token });
+
+  } catch (err) {
     console.error(err);
-    res.status(500).json({error:'Internal server error'});
+    res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
+
 
 
 const login= async(req,res)=>{
@@ -114,7 +119,6 @@ res.status(200).json({message:'Login successful',token: token});
   res.status(500).json({ error: 'Internal server error' });
 }
 }
-
 
 const sendPatientsDetails = async (req, res) => {
   try {
@@ -154,12 +158,13 @@ const sendPatientsDetails = async (req, res) => {
       return res.status(400).json({ error: "Queue number must be a valid integer." });
     }
 
-    // Assuming you want to add a unique queue number per day
-    const today = new Date().toISOString().split('T')[0]; // Format: 'YYYY-MM-DD'
+    // Use the current date as a Date object
+    const today = new Date();  // Automatically captures the correct date
 
+    // Check if the queue number exists for today's date
     const existingQueue = await Patient.findOne({
       queueNumber: parsedQueueNumber,
-      recordingDate: today, // Assuming you store the date in a field like 'recordingDate'
+      recordingDate: today, // This should work as Mongoose can handle Date objects
     });
 
     if (existingQueue) {
@@ -177,10 +182,9 @@ const sendPatientsDetails = async (req, res) => {
       symptoms,
       diseaseDescription,
       queueNumber: parsedQueueNumber,
-      diseaseStartDate,
-      recordingDate: today,
-       // Automatically save the current date
-       filled_in:req.userId,
+      diseaseStartDate: new Date(diseaseStartDate),  // Ensure diseaseStartDate is also a valid Date object
+      recordingDate: today,  // Use the current date
+      filled_in: req.userId,
     });
 
     await patient.save();
@@ -192,6 +196,7 @@ const sendPatientsDetails = async (req, res) => {
     return res.status(500).json({ error: "Server error. Please try again later." });
   }
 };
+
 
 
 
@@ -292,7 +297,8 @@ const prescribeMedication = async (req, res) => {
     return res.status(400).json({ message: 'Invalid or missing insurance number' });
   }
 
-  // check if the user role is a doctor 
+
+
   if(!req.user || req.user.role !=='doctor'){
     return res.status(403).json({ message: 'You are not authorized. Only doctors can prescribe medications.' });
   }
@@ -344,14 +350,15 @@ const prescribeMedication = async (req, res) => {
 // I have to create a get route for this , 
 const getDrugsPrescribed = async (req, res) => {
   const { insuranceNumber } = req.params;
-  
+
   // Check if the insuranceNumber is valid
   if (!insuranceNumber || isNaN(insuranceNumber)) {
     return res.status(400).json({ message: 'Invalid or missing insurance number' });
   }
 
-  // Get today's date in YYYY-MM-DD format to match against the prescription date
-  const today = new Date().toISOString().split('T')[0];
+  // Get the start and end of today's date
+  const startOfToday = new Date().setHours(0, 0, 0, 0);  // Midnight of today
+  const endOfToday = new Date().setHours(23, 59, 59, 999); // End of the day
 
   try {
     // Find the patient by insurance number
@@ -360,11 +367,14 @@ const getDrugsPrescribed = async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    // Query the Medication model to find drugs prescribed on the same day (using the 'createdAt' date)
+    // Query the Medication model to find drugs prescribed today (using the 'createdAt' date)
     const prescribedDrugs = await Medication.find({
       patient: patient._id,
       status: "Prescribed",
-      prescibedDate:today,
+      createdAt: {
+        $gte: new Date(startOfToday),  // Start of the day
+        $lt: new Date(endOfToday),     // End of the day
+      },
     });
 
     // If no drugs were prescribed today, return an appropriate response
@@ -380,6 +390,7 @@ const getDrugsPrescribed = async (req, res) => {
     return res.status(500).json({ message: "Server error while retrieving prescribed drugs" });
   }
 };
+
 
 
 
