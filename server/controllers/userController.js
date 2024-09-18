@@ -356,9 +356,11 @@ const getDrugsPrescribed = async (req, res) => {
     return res.status(400).json({ message: 'Invalid or missing insurance number' });
   }
 
-  // Get the start and end of today's date
-  const startOfToday = new Date().setHours(0, 0, 0, 0);  // Midnight of today
-  const endOfToday = new Date().setHours(23, 59, 59, 999); // End of the day
+  // Get today's date at the start (00:00:00) and the end of the day (23:59:59)
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0); // Set to start of the day
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999); // Set to end of the day
 
   try {
     // Find the patient by insurance number
@@ -367,14 +369,14 @@ const getDrugsPrescribed = async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    // Query the Medication model to find drugs prescribed today (using the 'createdAt' date)
+    // Query the Medication model to find drugs prescribed today
     const prescribedDrugs = await Medication.find({
       patient: patient._id,
       status: "Prescribed",
-      createdAt: {
-        $gte: new Date(startOfToday),  // Start of the day
-        $lt: new Date(endOfToday),     // End of the day
-      },
+      createdAt: { 
+        $gte: startOfDay,  // Start of today
+        $lte: endOfDay     // End of today
+      }
     });
 
     // If no drugs were prescribed today, return an appropriate response
@@ -397,6 +399,7 @@ const getDrugsPrescribed = async (req, res) => {
 
 
 
+
 // the pharmacist portion of things 
 const donePrescription = async (req, res) => {
   const { insuranceNumber } = req.params;
@@ -405,12 +408,12 @@ const donePrescription = async (req, res) => {
   if (!insuranceNumber || isNaN(insuranceNumber)) {
     return res.status(400).json({ message: 'Invalid or missing insurance number' });
   }
-
-
-    // check if the user role is a pharmacist  
-  if(!req.user || req.user.role !=='pharmacist'){
-      return res.status(403).json({ message: 'You are not authorized. Only pharmacist can prescribe medications.' });
-    }
+  
+  if (!req.user || req.user.role !== 'pharmacist') {
+    return res.status(403).json({ message: 'You are not authorized. Only pharmacist can prescribe medications.' });
+  }
+  
+  // Catch-all error handling
 
   try {
     // Find the patient by insuranceNumber
@@ -434,6 +437,7 @@ const donePrescription = async (req, res) => {
 
     // Optionally, update the patient's record to mark the prescription process as complete
     patient.prescriptionComplete = true;
+    console.log("It is done")
     await patient.save();
 
     res.status(200).json({ message: "Prescription process completed successfully", medication });
