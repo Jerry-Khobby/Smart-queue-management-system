@@ -12,6 +12,7 @@ const Forms = () => {
   const navigate = useNavigate();
   const [openForm, setOpenForm] = useState(false);  // Track form visibility
   const [status, setStatus] = useState("");  // Track selected status value
+  const [prescriptionDate, setPrescriptionDate] = useState(""); // Track selected date
 
   useEffect(() => {
     const token = getItem("token");
@@ -42,8 +43,6 @@ const Forms = () => {
     }
   };
 
-  // The submission of the drug status is not working 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = getItem("token");
@@ -52,25 +51,24 @@ const Forms = () => {
       return;
     }
     try {
-      const response = await axios.patch(`http://localhost:8000/patient-prescribe/${insuranceNumber}`, {
+      const response = await axios.patch(`http://localhost:8000/prescription/${insuranceNumber}`, {
         status,
+        dispensedDate: prescriptionDate,  // Include the prescription date in the request
       }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
-      // Set the backend message from the response
+
       if (response.data.message) {
         setMessage(response?.data?.message);
       }
-  
-      // Optionally, update the UI to reflect the successful submission
+
       setPrescribedDrugs(response.data.prescribedDrugs || []);
       setOpenForm(false);  // Close the form on success
       setStatus("");  // Reset the status
+      setPrescriptionDate("");  // Reset the date
     } catch (error) {
-      // Capture the error message if present
       if (error.response && error.response.data && error.response.data.message) {
         setMessage(error?.response?.data?.message);
       } else {
@@ -78,7 +76,6 @@ const Forms = () => {
       }
     }
   };
-  
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100">
@@ -87,7 +84,7 @@ const Forms = () => {
       ) : (
         <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
           <h2 className="text-xl font-bold text-center mb-6">Drugs Prescribed Today</h2>
-          <p className="text-center mb-4 text-gray-700">{message}</p>  {/* Display the backend message */}
+          <p className="text-center mb-4 text-gray-700">{message}</p>
           {prescribedDrugs.length > 0 ? (
             <>
               {prescribedDrugs.map((drug, index) => (
@@ -98,15 +95,13 @@ const Forms = () => {
                 </div>
               ))}
 
-              {/* Show "Issue Drug" button if drugs are present */}
               <button
                 className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-sm border-1 border-green-700 shadow-md hover:shadow-lg transition-shadow duration-200 font-mono mt-4"
-                onClick={() => setOpenForm(true)}  // Open the form when clicked
+                onClick={() => setOpenForm(true)}
               >
                 Issue Drug
               </button>
 
-              {/* Display the form when "Issue Drug" button is clicked */}
               {openForm && (
                 <form onSubmit={handleSubmit} className="mt-4">
                   <label htmlFor="status" className="block text-gray-700 font-bold mb-2">
@@ -115,7 +110,7 @@ const Forms = () => {
                   <select
                     id="status"
                     value={status}
-                    onChange={(e) => setStatus(e.target.value)}  // Track selected status
+                    onChange={(e) => setStatus(e.target.value)}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:border-blue-500"
                     required
                   >
@@ -123,6 +118,18 @@ const Forms = () => {
                     <option value="Dispensed">Dispensed</option>
                     <option value="Not Available">Not Available</option>
                   </select>
+
+                  <label htmlFor="prescriptionDate" className="block text-gray-700 font-bold mt-4">
+                    Prescription Date
+                  </label>
+                  <input
+                    type="date"
+                    id="prescriptionDate"
+                    value={prescriptionDate}
+                    onChange={(e) => setPrescriptionDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:border-blue-500"
+                    required
+                  />
 
                   <button
                     type="submit"

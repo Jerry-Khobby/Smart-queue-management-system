@@ -421,6 +421,8 @@ const donePrescription = async (req, res) => {
   if (!insuranceNumber || isNaN(insuranceNumber)) {
     return res.status(400).json({ message: 'Invalid or missing insurance number' });
   }
+
+  console.log("Received insurance number:", insuranceNumber);
   
   if (!req.user || req.user.role !== 'pharmacist') {
     return res.status(403).json({ message: 'You are not authorized. Only pharmacist can prescribe medications.' });
