@@ -42,6 +42,8 @@ const Forms = () => {
     }
   };
 
+  // The submission of the drug status is not working 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = getItem("token");

@@ -19,7 +19,7 @@ const MedicationSchema = new Schema({
     ref: "User", // Reference to the doctor who prescribed the medication
     required: true,
   },
-  prescibedDate:{
+prescibedDate:{
 type:Date,
 default:Date.now(),
 required:true,

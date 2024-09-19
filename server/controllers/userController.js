@@ -293,16 +293,17 @@ const prescribeMedication = async (req, res) => {
   const { insuranceNumber } = req.params;
   const medications = req.body.medications;
 
+  // Validate insurance number
   if (!insuranceNumber || isNaN(insuranceNumber)) {
     return res.status(400).json({ message: 'Invalid or missing insurance number' });
   }
 
-
-
-  if(!req.user || req.user.role !=='doctor'){
+  // Check if user is a doctor
+  if (!req.user || req.user.role !== 'doctor') {
     return res.status(403).json({ message: 'You are not authorized. Only doctors can prescribe medications.' });
   }
 
+  // Validate medications array
   if (!Array.isArray(medications) || medications.length === 0) {
     return res.status(400).json({ message: 'No medications provided' });
   }
@@ -311,6 +312,14 @@ const prescribeMedication = async (req, res) => {
     const patient = await Patient.findOne({ insuranceNumber });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
+    }
+
+    // Ensure the prescription is made on the day the patient was created
+    const patientCreationDate = new Date(patient.recordingDate).setHours(0, 0, 0, 0); // Set patient creation date at midnight
+    const today = new Date().setHours(0, 0, 0, 0); // Set today's date at midnight
+
+    if (today !== patientCreationDate) {
+      return res.status(400).json({ message: 'Prescriptions can only be made on the day the patient was created.' });
     }
 
     const medicationRecords = [];
@@ -323,12 +332,14 @@ const prescribeMedication = async (req, res) => {
         return res.status(400).json({ message: 'All medication fields (drugName, dosage, frequency) are required' });
       }
 
+      // Create medication record
       const medication = new Medication({
         drugName,
         dosage,
         frequency,
         prescribedBy: req.userId,
         patient: patient._id,
+        prescribedDate: today // Set the prescribed date to today's date
       });
 
       await medication.save();
@@ -344,6 +355,8 @@ const prescribeMedication = async (req, res) => {
     res.status(500).json({ error: "There was an error prescribing the medications" });
   }
 };
+
+
 
 
 
@@ -430,7 +443,9 @@ const donePrescription = async (req, res) => {
     // Update the medication record with pharmacist's details
     medication.status = status || "Dispensed";  // Set status to "Dispensed" by default
     medication.dispensedDate = dispensedDate || new Date();  // Use current date if not provided
-    medication.dispensedBy = req.userId;  // Assuming the pharmacist's ID is stored in req.userId
+    medication.dispensedBy = req.userId;
+      // Assuming the pharmacist's ID is stored in req.userId
+    
 
     // Save the updated medication record
     await medication.save();
