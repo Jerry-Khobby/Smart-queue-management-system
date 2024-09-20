@@ -74,7 +74,7 @@ useEffect(() => {
     }
   
     try {
-      const response = await axios.post('https://smart-queue-management-system.onrender.com/patient-details', updatedFormData, {
+      const response = await axios.post('https://smart-queue-management-system-1.onrender.com/patient-details', updatedFormData, {
         headers: {
           Authorization: `Bearer ${token}`, 
         },

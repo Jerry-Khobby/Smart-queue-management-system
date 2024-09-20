@@ -46,7 +46,7 @@ const UserLoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("https://smart-queue-management-system.onrender.com/login", {
+      const response = await axios.post("https://smart-queue-management-system-1.onrender.com/login", {
         email: formData.email,
         password: formData.password, // Only one password is needed for submission
       }, {

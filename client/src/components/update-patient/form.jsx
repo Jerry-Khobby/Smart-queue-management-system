@@ -52,7 +52,7 @@ const UpdatePatientForms = () => {
   
     try {
       const response = await axios.post(
-        `https://smart-queue-management-system.onrender.com/update-patient/${patientData.insuranceNumber}`, // Use insuranceNumber from patientData
+        `https://smart-queue-management-system-1.onrender.com/update-patient/${patientData.insuranceNumber}`, // Use insuranceNumber from patientData
         formData,
         {
           headers: {
