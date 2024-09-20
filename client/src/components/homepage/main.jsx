@@ -15,7 +15,7 @@ const AllPatients = () => {
         throw new Error("No valid token found");
       }
 
-      const response = await axios.get("http://localhost:8000/patients", {
+      const response = await axios.get("https://smart-queue-management-system.onrender.com/patients", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

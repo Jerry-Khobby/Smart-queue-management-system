@@ -27,7 +27,7 @@ const SinglePatient = () => {
       const token = getItem("token"); // Retrieve token
 
       try {
-        const response = await axios.get(`http://localhost:8000/patient/${insuranceNumber}`, {
+        const response = await axios.get(`https://smart-queue-management-system.onrender.com/patient/${insuranceNumber}`, {
           headers: {
             Authorization: `Bearer ${token}`, // Pass token in header
           },

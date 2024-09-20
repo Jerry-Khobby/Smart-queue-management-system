@@ -25,7 +25,7 @@ const Forms = () => {
 
   const fetchDrugs = async (token) => {
     try {
-      const response = await axios.get(`http://localhost:8000/patient-prescribe/${insuranceNumber}`, {
+      const response = await axios.get(`https://smart-queue-management-system.onrender.com/patient-prescribe/${insuranceNumber}`, {
         headers: {
           Authorization: `Bearer ${token}`,  // Add token in headers
         },
@@ -51,7 +51,7 @@ const Forms = () => {
       return;
     }
     try {
-      const response = await axios.patch(`http://localhost:8000/prescription/${insuranceNumber}`, {
+      const response = await axios.patch(`https://smart-queue-management-system.onrender.com/prescription/${insuranceNumber}`, {
         status,
         dispensedDate: prescriptionDate,  // Include the prescription date in the request
       }, {

@@ -60,7 +60,7 @@ const UserAdditionForm = () => {
     }
   
     try {
-      const response = await axios.post("http://localhost:8000/create", {
+      const response = await axios.post("https://smart-queue-management-system.onrender.com/create", {
         name: formData.name,
         email: formData.email,
         password: formData.password, // Only one password is needed for submission

@@ -55,7 +55,7 @@ const UserIcon = () => {
   // Create a function that logs out the user
   const handleLogout = async () => {
     try {
-      const response = await axios.put('http://localhost:8000/logout', {}, {
+      const response = await axios.put('https://smart-queue-management-system.onrender.com/logout', {}, {
         headers: {
           'Authorization': `Bearer ${getItem('token')}`  // Include the token in the request
         }

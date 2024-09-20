@@ -44,7 +44,7 @@ const IssueDrugsForms = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/patient-prescribe/${insuranceNumber}`,
+        `https://smart-queue-management-system.onrender.com/patient-prescribe/${insuranceNumber}`,
         { medications: forms }, // Send the forms as an array of medications
         {
           headers: {
